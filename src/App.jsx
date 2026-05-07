@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import AppRouter from "./router/AppRouter";
 import AuthProvider from "./context/AuthProvider";
 
@@ -34,6 +35,7 @@ function App() {
           <ReactQueryDevtools initialIsOpen={false} />
         </Suspense>
       ) : null}
+      <Analytics />
     </QueryClientProvider>
   );
 }
