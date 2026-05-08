@@ -112,7 +112,7 @@ function AuthProvider({ children }) {
     if (!result.success) {
       setError(result.error);
     }
-
+    setRole(result.role);
     return result;
   }
 

@@ -101,7 +101,7 @@ function RegisterTechnician() {
     setIsSubmitting(false);
 
     if (result.success) {
-      navigate("//subscription", {
+      navigate("/subscription", {
         replace: true,
         state: {
           notice:

@@ -15,7 +15,7 @@ const RegisterCustomer = lazy(() => import("../pages/RegisterCustomer"));
 const RegisterTechnician = lazy(() => import("../pages/RegisterTechnician"));
 const Support = lazy(() => import("../pages/Support"));
 const TechDashboard = lazy(() => import("../pages/TechDashboard"));
-const TechOnboarding = lazy(() => import("../pages/TechOnboarding"));
+
 const SubscriptionPage = lazy(() => import("../pages/SubscriptionPage")); // Lazy loaded
 const TechnicianList = lazy(() => import("../pages/TechnicianList"));
 const UserDashboard = lazy(() => import("../pages/UserDashboard"));
@@ -39,7 +39,6 @@ function AppRouter() {
 
         {/* Post-Registration Technician Flow (Full Screen) */}
         <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route path="/tech/onboarding" element={<TechOnboarding />} />
 
         {/* Protected App Routes (Inside Layout) */}
         <Route
