@@ -6,7 +6,7 @@ import AuthSplitLayout from "../ui/AuthSplitLayout";
 
 function RegisterCustomer() {
   const navigate = useNavigate();
-  const { clearAuthError, error, signUpCustomer } = useAuth();
+  const { error, signUpCustomer } = useAuth();
 
   const [formState, setFormState] = useState({
     fullName: "",
@@ -18,13 +18,13 @@ function RegisterCustomer() {
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    clearAuthError();
-  }, [clearAuthError]);
+  // useEffect(() => {
+  //   clearAuthError();
+  // }, [clearAuthError]);
 
   function updateField(field, value) {
     setFormError("");
-    clearAuthError();
+    // clearAuthError();
     setFormState((current) => ({
       ...current,
       [field]: value,
@@ -58,6 +58,7 @@ function RegisterCustomer() {
       email,
       password: formState.password,
       fullName,
+      profilePicture: formState.profilePicture,
     });
 
     setIsSubmitting(false);

@@ -6,15 +6,37 @@ import {
   Settings2,
   UserRound,
   X,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../context/useAuth";
+import { useEffect, useState } from "react";
 
 function AppSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { role, signOut, user } = useAuth();
+  const [darkMode, setDarkMode] = useState(() => {
+    return (
+      localStorage.getItem("theme") === "dark" ||
+      (window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
+  });
 
-  const dashboardPath = role === "technician" ? "/tech/dashboard" : "/dashboard";
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkMode) {
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
+
+  const dashboardPath =
+    role === "technician" ? "/tech/dashboard" : "/dashboard";
   const primaryLinks = [
     {
       to: dashboardPath,
@@ -57,10 +79,24 @@ function AppSidebar({ isOpen, onClose }) {
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between gap-2">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#98a3b1]">
             Navigation
           </p>
+
+          <button
+            type="button"
+            onClick={() => setDarkMode((d) => !d)}
+            className="grid h-9 w-9 place-items-center rounded-xl border border-[#e6ebf0] text-[#566273] bg-white dark:bg-[#23272f] dark:text-[#cbd5e1]"
+            aria-label="Toggle dark mode"
+            title="Toggle dark mode"
+          >
+            {darkMode ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </button>
 
           <button
             type="button"
@@ -93,20 +129,6 @@ function AppSidebar({ isOpen, onClose }) {
         </nav>
 
         <div className="mt-auto">
-          <div className="rounded-[24px] border border-[#edf1f5] bg-[#f8fafc] p-4">
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-full bg-[#eefbe8] text-sm font-semibold text-[#35a40b]">
-                {initials}
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#1f2b3b]">
-                  {user?.user_metadata?.full_name || "EthioTech user"}
-                </p>
-                <p className="truncate text-xs text-[#7e8a98]">{user?.email}</p>
-              </div>
-            </div>
-          </div>
-
           <div className="mt-4 space-y-1.5">
             <button
               type="button"

@@ -21,11 +21,17 @@ function ensureSupabase() {
 
 // --- AUTH FUNCTIONS ---
 
-export async function signUpCustomer({ email, password, fullName }) {
+export async function signUpCustomer({
+  email,
+  password,
+  fullName,
+  profilePicture,
+}) {
   const configError = ensureSupabase();
   if (configError) return configError;
 
   try {
+    const { data: profileData } = uploadFile(profilePicture, fullName);
     const { data, error } = await supabase.auth.signUp({
       email: normalizeText(email, { lowercase: true }),
       password,
@@ -33,11 +39,13 @@ export async function signUpCustomer({ email, password, fullName }) {
         data: {
           full_name: normalizeText(fullName),
           requested_role: "customer",
+          avatar_url: profileData?.path || null,
         },
       },
     });
 
     if (error) return { success: false, error: error.message };
+
     return { success: true, user: data.user, session: data.session };
   } catch (err) {
     return { success: false, error: err.message };
@@ -69,7 +77,8 @@ export async function signUpTechnician({
     };
   }
 
-  const avatarUrl = uploadData?.fullPath;
+  const avatarUrl = uploadData?.path;
+  console.log("upload url:", avatarUrl);
   console.log("Category ID:", catagorie_id);
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -104,22 +113,35 @@ export async function login(email, password) {
   if (configError) return configError;
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: normalizeText(email, { lowercase: true }),
       password,
     });
 
     if (error) return { success: false, error: error.message };
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id);
-    if (profileError) return { success: false, error: profileError.message };
+
+    // Get the path from metadata
+    const storagePath = authData.user.user_metadata?.avatar_url;
+    let finalImageUrl = null;
+
+    // Only fetch the public URL if a path exists
+    if (storagePath) {
+      const { data } = supabase.storage
+        .from("profile_pic")
+        .getPublicUrl(storagePath);
+      finalImageUrl = data.publicUrl;
+    }
+    console.log("final url:", finalImageUrl);
+    // Attach the full URL to the user object for the UI
+    const userWithImage = {
+      ...authData.user,
+      avatar_url: finalImageUrl,
+    };
+
     return {
       success: true,
-      user: data.user,
-      session: data.session,
-      role: profileData[0].role,
+      user: userWithImage,
+      session: authData.session,
     };
   } catch (err) {
     return { success: false, error: err.message };

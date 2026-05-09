@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from "react-router-dom";
 
 function ProtectedRoute({ isAuthenticated, userRole, allowedRoles, children }) {
   const location = useLocation();
@@ -15,3 +15,6 @@ function ProtectedRoute({ isAuthenticated, userRole, allowedRoles, children }) {
 }
 
 export default ProtectedRoute;
+// isAuthenticated={isAuthenticated}
+// userRole={role}
+// allowedRoles={appRoles}

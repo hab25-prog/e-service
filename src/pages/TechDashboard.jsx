@@ -21,7 +21,8 @@ import PaymentMethodBadge from "../ui/PaymentMethodBadge";
 
 function TechDashboard() {
   const { user } = useAuth();
-  const technicianName = user?.user_metadata?.full_name?.trim() ?? "";
+  console.log("Authenticated user:", user);
+  const technicianName = user?.full_name?.trim() ?? "";
   const { data: liveBookings = [] } = useBookings(
     { technicianName },
     { enabled: Boolean(technicianName) },
@@ -218,12 +219,18 @@ function TechDashboard() {
 
             <div className="mt-5 space-y-4">
               {[
-                { label: "Response rate", value: technicianPerformance.responseRate },
+                {
+                  label: "Response rate",
+                  value: technicianPerformance.responseRate,
+                },
                 {
                   label: "Completion rate",
                   value: technicianPerformance.completionRate,
                 },
-                { label: "Monthly rating", value: technicianPerformance.monthlyRating },
+                {
+                  label: "Monthly rating",
+                  value: technicianPerformance.monthlyRating,
+                },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -237,7 +244,7 @@ function TechDashboard() {
               ))}
             </div>
           </article>
-
+          {/* 
           <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
             <h3 className="text-[1.5rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
               Payout Methods
@@ -253,9 +260,9 @@ function TechDashboard() {
                 />
               ))}
             </div>
-          </article>
+          </article> */}
 
-          <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
+          {/* <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
             <h3 className="flex items-center gap-2 text-[1.5rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
               <TrendingUp className="h-5 w-5 text-[#35a40b]" />
               Earnings Trend
@@ -273,7 +280,8 @@ function TechDashboard() {
                       className="h-2.5 rounded-full bg-[#59d61c]"
                       style={{
                         width: `${Math.min(
-                          (Number(entry.amount.replace(/\D/g, "")) / 4000) * 100,
+                          (Number(entry.amount.replace(/\D/g, "")) / 4000) *
+                            100,
                           100,
                         )}%`,
                       }}
@@ -282,9 +290,9 @@ function TechDashboard() {
                 </div>
               ))}
             </div>
-          </article>
+          </article> */}
 
-          <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
+          {/* <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
             <h3 className="flex items-center gap-2 text-[1.5rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
               <Wallet className="h-5 w-5 text-[#35a40b]" />
               Coverage
@@ -296,12 +304,14 @@ function TechDashboard() {
                   key={area.city}
                   className="rounded-[18px] border border-[#edf1f5] bg-[#fafbfc] px-4 py-3"
                 >
-                  <p className="text-sm font-semibold text-[#1d2939]">{area.city}</p>
+                  <p className="text-sm font-semibold text-[#1d2939]">
+                    {area.city}
+                  </p>
                   <p className="mt-1 text-sm text-[#667085]">{area.eta}</p>
                 </div>
               ))}
             </div>
-          </article>
+          </article> */}
         </div>
       </div>
     </section>

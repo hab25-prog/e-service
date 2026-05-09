@@ -22,8 +22,9 @@ const UserDashboard = lazy(() => import("../pages/UserDashboard"));
 
 function AppRouter() {
   const { isAuthenticated, isLoading, role } = useAuth();
-  const appRoles = ["user", "technician"];
+  const appRoles = ["customer", "technician"];
 
+  // 1. Critical: Wait for the AuthProvider to finish its DB check
   if (isLoading) {
     return <Loader />;
   }
@@ -31,16 +32,46 @@ function AppRouter() {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-        {/* Public Routes */}
-        <Route index element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<RegisterCustomer />} />
-        <Route path="/register-technician" element={<RegisterTechnician />} />
+        <Route
+          element={
+            !isAuthenticated ? (
+              <LandingPage />
+            ) : (
+              <Navigate
+                to={role === "technician" ? "/tech/dashboard" : "/services"}
+                replace
+              />
+            )
+          }
+          index
+        />
 
-        {/* Post-Registration Technician Flow (Full Screen) */}
+        <Route
+          path="/login"
+          element={!isAuthenticated ? <Login /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/signup"
+          element={
+            !isAuthenticated ? (
+              <RegisterCustomer />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/register-technician"
+          element={
+            !isAuthenticated ? (
+              <RegisterTechnician />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
         <Route path="/subscription" element={<SubscriptionPage />} />
-
-        {/* Protected App Routes (Inside Layout) */}
+        {/* Protected Wrapper */}
         <Route
           path="/"
           element={
@@ -53,45 +84,40 @@ function AppRouter() {
             </ProtectedRoute>
           }
         >
+          {/* Shared Routes */}
           <Route path="services" element={<Home />} />
           <Route path="technicians" element={<TechnicianList />} />
           <Route path="support" element={<Support />} />
-          <Route path="home" element={<Navigate to="/services" replace />} />
 
-          {/* Customer Only */}
+          {/* Dashboard Redirect Logic */}
           <Route
             path="dashboard"
             element={
-              <ProtectedRoute
-                isAuthenticated={isAuthenticated}
-                userRole={role}
-                allowedRoles={["user"]}
-              >
+              role === "technician" ? (
+                <Navigate to="/tech/dashboard" replace />
+              ) : (
                 <UserDashboard />
-              </ProtectedRoute>
+              )
             }
           />
 
-          {/* Technician Only */}
           <Route
             path="tech/dashboard"
             element={
-              <ProtectedRoute
-                isAuthenticated={isAuthenticated}
-                userRole={role}
-                allowedRoles={["technician"]}
-              >
+              // Use the same string your AuthProvider uses (likely "user" or "customer")
+              role === "customer" ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
                 <TechDashboard />
-              </ProtectedRoute>
+              )
             }
           />
         </Route>
 
-        {/* Catch All */}
+        <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );
 }
-
 export default AppRouter;

@@ -1,6 +1,7 @@
 import { Bell, Menu, Sparkles } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import useAuth from "../../context/useAuth";
+import ProfileAvator from "./ProfileAvator";
 
 const pageMeta = {
   "/dashboard": {
@@ -75,27 +76,28 @@ function AppHeader({ onMenuClick }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <div className="hidden text-right md:block">
+          {/* <div className="hidden text-right md:block">
             <p className="text-sm font-semibold text-[#1e2b3b]">
               {displayName}
             </p>
             <p className="text-xs uppercase tracking-[0.18em] text-[#8b97a6]">
               {role === "technician" ? "Technician" : "Customer"}
             </p>
-          </div>
+          </div> */}
 
           <button
             type="button"
             className="grid h-10 w-10 place-items-center rounded-full border border-[#e4e9ef] bg-white text-[#273345] transition hover:bg-[#f7fafb]"
             aria-label="Notifications"
           >
-            <Bell className="h-4 w-4" />
+            <Bell className="h-3 w-3" />
           </button>
 
-          <div className="relative grid h-10 w-10 place-items-center rounded-full bg-[#eefbe8] text-sm font-semibold text-[#3db40e] sm:h-11 sm:w-11">
+          {/* <div className="relative grid h-10 w-10 place-items-center rounded-full bg-[#eefbe8] text-sm font-semibold text-[#3db40e] sm:h-11 sm:w-11">
             {initials}
             <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#59d61c]" />
-          </div>
+          </div> */}
+          <ProfileAvator user={user} />
         </div>
       </div>
     </header>

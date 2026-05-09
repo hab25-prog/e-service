@@ -22,6 +22,22 @@
     --shadow-soft: 0 20px 44px -36px rgba(15, 23, 42, 0.18);
   }
 
+  .dark {
+    --ink-900: #f3f6fb;
+    --ink-700: #cbd5e1;
+    --ink-500: #94a3b8;
+    --line-soft: #23272f;
+    --line-strong: #1e222a;
+    --brand-600: #59d61c;
+    --brand-500: #35a40b;
+    --brand-100: #1a2a1a;
+    --panel: #181f2a;
+    --panel-soft: #23272f;
+    --shadow-soft: 0 20px 44px -36px rgba(15, 23, 42, 0.48);
+    background: #101624;
+    color: var(--ink-900);
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -35,6 +51,9 @@
     min-height: 100svh;
     background: #f6f7fb;
     color: var(--ink-900);
+    transition:
+      background 0.3s,
+      color 0.3s;
   }
 
   #root {
