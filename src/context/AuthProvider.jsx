@@ -33,7 +33,7 @@ function AuthProvider({ children }) {
     }
 
     const nextUser = nextSession.user;
-
+    console.log("Applying session for user:", nextUser);
     // 1. Resolve the Avatar URL
     const storagePath = nextUser.user_metadata?.avatar_url;
     let finalAvatarUrl = null;

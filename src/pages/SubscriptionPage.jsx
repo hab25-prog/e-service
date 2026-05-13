@@ -16,6 +16,7 @@ import {
   saveSubscription,
   initializeSubscriptionPayment,
 } from "../service/apiEndPoint";
+import useSubscription from "../hook/useSubscription";
 
 const plans = [
   {
@@ -66,30 +67,69 @@ function SubscriptionPage() {
   const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { subscriptiondata, isLoading: subLoading } = useSubscription(user?.id);
 
+  console.log("--- DEBUG START ---");
+  console.log("Current User ID:", user?.id);
+  console.log("URL Status:", status);
+  console.log("Subscription from Hook:", subscriptiondata?.data);
+  console.log("Pending Plan in Storage:", localStorage.getItem("pending_plan"));
+
+  // 1. Remove the "if (subscription) navigate('/')" from the component body.
+  // We will handle navigation inside useEffect instead.
+  // if (!subscriptiondata.data.length == 0 && !loading) {
+  //   navigate("/");
+  // }
+  const subscription =
+    subscriptiondata?.data && subscriptiondata.data.length > 0;
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("status") === "success" && user) {
-      const pending = JSON.parse(localStorage.getItem("pending_plan"));
-      if (pending && user) {
-        setLoading(true);
-        saveSubscription({
-          userId: user.id,
-          planName: pending.name,
-          price: pending.price,
-        }).then((res) => {
-          if (res.success) {
-            localStorage.removeItem("pending_plan");
-            toast.success("Subscription activated!");
-            navigate("/");
-          } else {
-            toast.error("Error: " + res.error);
+    const status = urlParams.get("status");
+
+    // IMPORTANT: Check these logs in your browser console
+    console.log("DEBUG: Status from URL:", status);
+    console.log("DEBUG: Subscription status:", subscription);
+
+    async function finalizePayment() {
+      // SCENARIO A: User just came back from Chapa with success
+      if (status === "success" && user?.id) {
+        const pending = JSON.parse(localStorage.getItem("pending_plan"));
+        console.log("DEBUG: Found pending plan in storage:", pending);
+
+        if (pending) {
+          setLoading(true);
+          try {
+            const res = await saveSubscription({
+              userId: user.id,
+              planName: pending.name,
+              price: pending.price,
+            });
+
+            if (res.success) {
+              localStorage.removeItem("pending_plan");
+              toast.success("Subscription activated!");
+              // Clean the URL and redirect home
+              navigate("/", { replace: true });
+            }
+          } catch (err) {
+            console.error("Payment Save Error:", err);
+          } finally {
+            setLoading(false);
           }
-          setLoading(false);
-        });
+        }
+      }
+      // SCENARIO B: User is already subscribed and NOT in a success flow
+      // We only redirect if status is NOT "success"
+      else if (subscription && status !== "success") {
+        console.log("DEBUG: User already has a sub, redirecting home...");
+        navigate("/");
       }
     }
-  }, [user, navigate]);
+
+    if (!subLoading) {
+      finalizePayment();
+    }
+  }, [user, subscription, subLoading, navigate]); // Added subscription to dependencies
 
   const handlePlanAction = async (plan) => {
     if (!user) return toast.error("Please login first");
@@ -113,22 +153,32 @@ function SubscriptionPage() {
     if (!selectedPlan || !user) return;
     setLoading(true);
     localStorage.setItem("pending_plan", JSON.stringify(selectedPlan));
-
+    console.log("Starting payment for plan:", selectedPlan, "and user:", user);
     const result = await initializeSubscriptionPayment({
       userId: user.id,
       email: user.email,
       amount: selectedPlan.price,
       planName: selectedPlan.name,
     });
-
+    console.log("Payment initialization result:", result);
     if (result.success && result.checkoutUrl) {
+      console.log("Redirecting to checkout URL:", result.checkoutUrl);
       window.location.href = result.checkoutUrl;
     } else {
       toast.error("Payment failed: " + result.error);
       setLoading(false);
     }
   };
-
+  // if (subscription) {
+  //   navigate("/");
+  // }
+  if (loading || subLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <Loader2 className="w-12 h-12 text-[#006666] animate-spin" />
+      </div>
+    );
+  }
   if (loading)
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">

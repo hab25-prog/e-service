@@ -1,43 +1,35 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import {
-  BadgeDollarSign,
   Clock3,
   MapPin,
   Search,
-  TrendingUp,
-  Wallet,
+  ChevronRight,
+  Briefcase,
+  CheckCircle2,
+  Timer,
+  Star,
 } from "lucide-react";
 import useAuth from "../context/useAuth";
-import {
-  paymentOptions,
-  payoutHistory,
-  serviceCoverage,
-  technicianPerformance,
-  technicianQueue,
-} from "../data/mockData";
+import { technicianPerformance, technicianQueue } from "../data/mockData";
 import useBookings from "../hook/useBookings";
 import useJobStatuses from "../hook/useJobStatuses";
-import PaymentMethodBadge from "../ui/PaymentMethodBadge";
 
 function TechDashboard() {
   const { user } = useAuth();
-  console.log("Authenticated user:", user);
-  const technicianName = user?.full_name?.trim() ?? "";
+  const technicianName =
+    user?.full_name?.trim() || user?.username || "Technician";
+
   const { data: liveBookings = [] } = useBookings(
     { technicianName },
     { enabled: Boolean(technicianName) },
   );
-  const {
-    data: jobStatuses = [],
-    error: jobStatusError,
-    isLoading: isLoadingJobStatuses,
-  } = useJobStatuses();
 
+  const { data: jobStatuses = [], isLoading: isLoadingStatuses } =
+    useJobStatuses();
+
+  // Process the queue logic
   const queue = useMemo(() => {
-    if (!liveBookings.length) {
-      return technicianQueue;
-    }
-
+    if (!liveBookings.length) return technicianQueue.slice(0, 5);
     return liveBookings.map((booking) => ({
       id: booking.bookingId ?? booking.id,
       customer: booking.ownerEmail || "Customer",
@@ -45,276 +37,232 @@ function TechDashboard() {
       schedule: booking.dateLabel,
       location: booking.address,
       status: booking.status,
-      budget: booking.price,
     }));
   }, [liveBookings]);
 
+  // Process live status cards
   const liveStatusCards = useMemo(() => {
-    const statusCounts = jobStatuses.reduce((accumulator, job) => {
-      const status = job?.status?.trim() || "Unknown";
-      accumulator[status] = (accumulator[status] ?? 0) + 1;
-      return accumulator;
+    const counts = jobStatuses.reduce((acc, job) => {
+      const s = job?.status?.trim() || "Unknown";
+      acc[s] = (acc[s] ?? 0) + 1;
+      return acc;
     }, {});
 
-    const orderedStatuses = ["Scheduled", "Confirmed", "In progress"];
-    const cards = orderedStatuses.map((status) => ({
-      label: status,
-      value: statusCounts[status] ?? 0,
-    }));
-
-    const remainingStatuses = Object.entries(statusCounts)
-      .filter(([status]) => !orderedStatuses.includes(status))
-      .map(([status, value]) => ({
-        label: status,
-        value,
-      }));
-
-    return [...cards, ...remainingStatuses].slice(0, 4);
+    return [
+      {
+        label: "Scheduled",
+        value: counts["Scheduled"] || 0,
+        icon: Clock3,
+        color: "text-blue-500",
+      },
+      {
+        label: "Confirmed",
+        value: counts["Confirmed"] || 0,
+        icon: CheckCircle2,
+        color: "text-[#006666]",
+      },
+      {
+        label: "In Progress",
+        value: counts["In progress"] || 0,
+        icon: Timer,
+        color: "text-amber-500",
+      },
+      {
+        label: "Total Jobs",
+        value: jobStatuses.length,
+        icon: Briefcase,
+        color: "text-slate-700",
+      },
+    ];
   }, [jobStatuses]);
 
   return (
-    <section className="space-y-6">
-      <div className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-[2rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
-              {`Welcome back, ${technicianName || technicianPerformance.name}!`}
-            </p>
-            <p className="mt-2 text-base text-[#667085]">
-              Stay on top of active jobs, earnings, and customer demand from one
-              cleaner workboard.
-            </p>
-          </div>
-
-          <div className="rounded-[22px] border border-[#edf2f7] bg-[#f8fbf6] px-5 py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7c8a99]">
-              This week
-            </p>
-            <p className="mt-2 text-sm font-medium text-[#35a40b]">
-              {technicianPerformance.weeklyEarnings}
-            </p>
-          </div>
+    <div className="max-w-[1400px] mx-auto space-y-8 pb-12">
+      {/* --- HERO WELCOME SECTION --- */}
+      <section className="relative overflow-hidden rounded-[32px] bg-[#111827] p-8 md:p-12 text-white shadow-2xl">
+        <div className="relative z-10 max-w-2xl">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4">
+            Hello,{" "}
+            <span className="text-[#006666] bg-white px-3 rounded-xl">
+              {technicianName.split(" ")[0]}
+            </span>
+          </h1>
+          <p className="text-slate-400 text-lg font-medium leading-relaxed">
+            Your field operations are looking strong today. You have{" "}
+            <span className="text-white font-bold">{queue.length} jobs</span>{" "}
+            remaining in your current pipeline.
+          </p>
         </div>
-      </div>
+        {/* Subtle decorative element */}
+        <div className="absolute top-[-10%] right-[-5%] w-64 h-64 bg-[#006666] rounded-full blur-[120px] opacity-20" />
+      </section>
 
-      <div className="flex items-center gap-3 rounded-[18px] border border-[#e4e9ef] bg-white px-4 py-3 text-sm text-[#667085] shadow-[0_12px_30px_-28px_rgba(15,23,42,0.16)]">
-        <Search className="h-4 w-4 text-[#667085]" />
-        <p>Track job flow, payout trends, and service coverage.</p>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-6">
-          <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
-            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h2 className="text-[1.7rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
-                  Live Job Status
-                </h2>
-                <p className="mt-2 text-sm text-[#667085]">
-                  Synced directly from the jobs table.
-                </p>
+      {/* --- QUICK STATS GRID --- */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {liveStatusCards.map((stat) => (
+          <div
+            key={stat.label}
+            className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-all group"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div
+                className={`p-3 rounded-2xl bg-gray-50 ${stat.color} group-hover:scale-110 transition-transform`}
+              >
+                <stat.icon size={22} />
               </div>
-              <p className="text-sm text-[#98a2b3]">jobs.select("status")</p>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Live
+              </span>
             </div>
+            <p className="text-3xl font-black text-slate-900 mb-1">
+              {isLoadingStatuses ? "..." : String(stat.value).padStart(2, "0")}
+            </p>
+            <p className="text-sm font-bold text-slate-500">{stat.label}</p>
+          </div>
+        ))}
+      </section>
 
-            {jobStatusError ? (
-              <div className="mt-5 rounded-[22px] border border-[#ffd6d1] bg-[#fff5f3] px-4 py-3 text-sm text-[#8d3b2d]">
-                {jobStatusError.message}
-              </div>
-            ) : null}
-
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {isLoadingJobStatuses
-                ? Array.from({ length: 4 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className="rounded-[20px] border border-[#edf1f5] bg-[#fafbfc] p-4"
-                    >
-                      <div className="h-3 w-20 rounded-full bg-[#e4eaf0]" />
-                      <div className="mt-3 h-8 w-12 rounded-full bg-[#e4eaf0]" />
-                    </div>
-                  ))
-                : liveStatusCards.map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-[20px] border border-[#edf1f5] bg-[#fafbfc] p-4"
-                    >
-                      <p className="text-sm text-[#667085]">{item.label}</p>
-                      <p className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#1d2939]">
-                        {String(item.value).padStart(2, "0")}
-                      </p>
-                    </div>
-                  ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* --- MAIN QUEUE SECTION --- */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+              Daily Workboard
+            </h2>
+            <div className="flex items-center gap-2 text-sm font-bold text-[#006666] cursor-pointer hover:underline">
+              View History <ChevronRight size={16} />
             </div>
-          </article>
+          </div>
 
-          <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
-            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h2 className="text-[1.7rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
-                  My Queue
-                </h2>
-                <p className="mt-2 text-sm text-[#667085]">
-                  Today’s work and the next-up jobs in your pipeline.
-                </p>
-              </div>
-              <p className="text-sm text-[#98a2b3]">{`${queue.length} jobs`}</p>
-            </div>
-
-            <div className="mt-6 space-y-4">
-              {queue.map((job) => (
-                <div
+          <div className="space-y-4">
+            {queue.length > 0 ? (
+              queue.map((job) => (
+                <article
                   key={job.id}
-                  className="rounded-[22px] border border-[#edf1f5] bg-[#fafbfc] p-5"
+                  className="group bg-white rounded-[28px] border border-gray-100 p-6 hover:border-[#006666]/30 hover:shadow-xl hover:shadow-teal-900/5 transition-all duration-300"
                 >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                    <div>
-                      <p className="text-lg font-semibold tracking-[-0.03em] text-[#1d2939]">
-                        {job.service}
-                      </p>
-                      <p className="mt-2 text-sm text-[#667085]">
-                        {`${job.customer} • ${job.id}`}
-                      </p>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-[#006666] font-bold shrink-0">
+                        {job.service.charAt(0)}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#006666] transition-colors">
+                          {job.service}
+                        </h3>
+                        <p className="text-sm font-medium text-slate-400 mt-0.5">
+                          {job.customer} • ID: {job.id.slice(0, 8)}
+                        </p>
+                      </div>
                     </div>
 
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    <div
+                      className={`px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest self-start md:self-center ${
                         job.status === "In progress"
-                          ? "bg-[#fff4e8] text-[#b54708]"
-                          : job.status === "Confirmed" ||
-                              job.status === "Scheduled"
-                            ? "bg-[#eefbe8] text-[#35a40b]"
-                            : "bg-[#eef2f6] text-[#475467]"
+                          ? "bg-amber-50 text-amber-600"
+                          : job.status === "Confirmed"
+                            ? "bg-emerald-50 text-emerald-600"
+                            : "bg-slate-50 text-slate-500"
                       }`}
                     >
                       {job.status}
-                    </span>
+                    </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 text-sm text-[#667085] md:grid-cols-3">
-                    <p className="flex items-center gap-2">
-                      <Clock3 className="h-4 w-4 text-[#35a40b]" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-50">
+                    <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                      <Clock3 size={18} className="text-[#006666]" />
                       {job.schedule}
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-[#35a40b]" />
+                    </div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                      <MapPin size={18} className="text-[#006666]" />
                       {job.location}
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <BadgeDollarSign className="h-4 w-4 text-[#35a40b]" />
-                      {job.budget}
-                    </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </article>
+                </article>
+              ))
+            ) : (
+              <div className="bg-gray-50 rounded-[28px] p-12 text-center border-2 border-dashed border-gray-200">
+                <Search size={40} className="mx-auto text-gray-300 mb-4" />
+                <p className="text-slate-500 font-bold">
+                  No active jobs in your queue
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="space-y-6">
-          <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
-            <h3 className="text-[1.5rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
-              Performance
-            </h3>
+        {/* --- PERFORMANCE SIDEBAR --- */}
+        <aside className="space-y-6">
+          <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-slate-900">Performance</h3>
+              <Star className="text-amber-400 fill-amber-400" size={20} />
+            </div>
 
-            <div className="mt-5 space-y-4">
+            <div className="space-y-8">
               {[
                 {
-                  label: "Response rate",
+                  label: "Response Rate",
                   value: technicianPerformance.responseRate,
+                  sub: "Last 30 days",
                 },
                 {
-                  label: "Completion rate",
+                  label: "Job Completion",
                   value: technicianPerformance.completionRate,
+                  sub: "Target: 98%",
                 },
                 {
-                  label: "Monthly rating",
+                  label: "Avg. Rating",
                   value: technicianPerformance.monthlyRating,
+                  sub: "Top 5% of Pros",
                 },
               ].map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-[18px] border border-[#edf1f5] bg-[#fafbfc] px-4 py-3"
-                >
-                  <p className="text-sm text-[#667085]">{item.label}</p>
-                  <p className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-[#1d2939]">
-                    {item.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </article>
-          {/* 
-          <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
-            <h3 className="text-[1.5rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
-              Payout Methods
-            </h3>
-
-            <div className="mt-5 space-y-3">
-              {paymentOptions.map((option, index) => (
-                <PaymentMethodBadge
-                  key={option.name}
-                  name={option.name}
-                  tone={option.tone}
-                  selected={index === 0}
-                />
-              ))}
-            </div>
-          </article> */}
-
-          {/* <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
-            <h3 className="flex items-center gap-2 text-[1.5rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
-              <TrendingUp className="h-5 w-5 text-[#35a40b]" />
-              Earnings Trend
-            </h3>
-
-            <div className="mt-5 space-y-4">
-              {payoutHistory.map((entry) => (
-                <div key={entry.day}>
-                  <div className="mb-2 flex items-center justify-between text-sm text-[#667085]">
-                    <span>{entry.day}</span>
-                    <span>{entry.amount}</span>
+                <div key={item.label}>
+                  <div className="flex justify-between items-end mb-2">
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        {item.label}
+                      </p>
+                      <p className="text-xs font-bold text-[#006666]">
+                        {item.sub}
+                      </p>
+                    </div>
+                    <p className="text-2xl font-black text-slate-900 leading-none">
+                      {item.value}
+                    </p>
                   </div>
-                  <div className="h-2.5 rounded-full bg-[#edf1f5]">
+                  <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
                     <div
-                      className="h-2.5 rounded-full bg-[#59d61c]"
+                      className="h-full bg-[#006666] rounded-full"
                       style={{
-                        width: `${Math.min(
-                          (Number(entry.amount.replace(/\D/g, "")) / 4000) *
-                            100,
-                          100,
-                        )}%`,
+                        width: item.value.includes("%") ? item.value : "95%",
                       }}
                     />
                   </div>
                 </div>
               ))}
             </div>
-          </article> */}
+          </div>
 
-          {/* <article className="rounded-[28px] border border-[#e7ecf1] bg-white p-6 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.15)]">
-            <h3 className="flex items-center gap-2 text-[1.5rem] font-semibold tracking-[-0.04em] text-[#1d2939]">
-              <Wallet className="h-5 w-5 text-[#35a40b]" />
-              Coverage
-            </h3>
-
-            <div className="mt-5 space-y-3">
-              {serviceCoverage.map((area) => (
-                <div
-                  key={area.city}
-                  className="rounded-[18px] border border-[#edf1f5] bg-[#fafbfc] px-4 py-3"
-                >
-                  <p className="text-sm font-semibold text-[#1d2939]">
-                    {area.city}
-                  </p>
-                  <p className="mt-1 text-sm text-[#667085]">{area.eta}</p>
-                </div>
-              ))}
+          {/* Quick Support Card */}
+          <div className="bg-[#006666] rounded-[32px] p-8 text-white text-center relative overflow-hidden group">
+            <div className="relative z-10">
+              <h4 className="font-bold mb-2">Need Assistance?</h4>
+              <p className="text-sm text-teal-100/80 mb-6 leading-relaxed">
+                Our pro support team is available 24/7 for active field jobs.
+              </p>
+              <button className="w-full py-3 bg-white text-[#006666] rounded-2xl font-black text-sm hover:bg-teal-50 transition-colors">
+                Contact Support
+              </button>
             </div>
-          </article> */}
-        </div>
+            <div className="absolute bottom-[-20px] right-[-20px] opacity-10 group-hover:scale-110 transition-transform">
+              <Briefcase size={120} />
+            </div>
+          </div>
+        </aside>
       </div>
-    </section>
+    </div>
   );
 }
 

@@ -2,6 +2,8 @@ import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import useAuth from "../context/useAuth";
 import Loader from "../pages/Loader";
+import Profile from "../pages/Proifle";
+import PaymentSuccess from "../pages/PaymentSuccess";
 
 // Lazy Load Components
 const AppLayout = lazy(() => import("../component/layout/AppLayout"));
@@ -85,9 +87,10 @@ function AppRouter() {
           }
         >
           {/* Shared Routes */}
-          <Route path="services" element={<Home />} />
-          <Route path="technicians" element={<TechnicianList />} />
-          <Route path="support" element={<Support />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/services" element={<Home />} />
+          <Route path="/technicians" element={<TechnicianList />} />
+          <Route path="/support" element={<Support />} />
 
           {/* Dashboard Redirect Logic */}
           <Route
@@ -114,7 +117,9 @@ function AppRouter() {
           />
         </Route>
 
-        <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route path="/subscription" element={<SubscriptionPage />}>
+          <Route path="/subscription/success" element={<PaymentSuccess />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

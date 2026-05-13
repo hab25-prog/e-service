@@ -1,103 +1,152 @@
-import { Bell, Menu, Sparkles } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Bell,
+  User,
+  Settings,
+  LogOut,
+  ChevronDown,
+  LayoutDashboard,
+} from "lucide-react";
 import useAuth from "../../context/useAuth";
 import ProfileAvator from "./ProfileAvator";
 
-const pageMeta = {
-  "/dashboard": {
-    title: "Customer Dashboard",
-    subtitle: "Manage bookings, payments, and support in one place.",
-  },
-  "/tech/dashboard": {
-    title: "Technician Workboard",
-    subtitle: "Track jobs, payouts, and field activity.",
-  },
-  "/services": {
-    title: "Services",
-    subtitle: "Browse categories and start a booking.",
-  },
-  "/technicians": {
-    title: "Technicians",
-    subtitle: "Compare specialists and find the right pro.",
-  },
-  "/support": {
-    title: "Support",
-    subtitle: "Coverage, payment help, and contact channels.",
-  },
-};
-
-function AppHeader({ onMenuClick }) {
-  const location = useLocation();
-  const { role, user } = useAuth();
-
-  const currentPage = pageMeta[location.pathname] ?? {
-    title: "Workspace",
-    subtitle: "Modern home service management.",
-  };
-
-  const initials =
-    user?.user_metadata?.full_name
-      ?.split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ||
-    user?.email?.slice(0, 2)?.toUpperCase() ||
-    "ET";
-
-  const displayName =
-    user?.user_metadata?.full_name?.trim() || user?.email || "EthioTech user";
+function AppHeader() {
+  const { user, signOut } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[#e8edf2] bg-white/95 backdrop-blur">
-      <div className="flex h-[70px] items-center justify-between px-3 sm:h-[76px] sm:px-4 md:px-6 xl:px-8">
-        <div className="flex min-w-0 items-center gap-3">
-          <button
-            type="button"
-            onClick={onMenuClick}
-            className="grid h-10 w-10 place-items-center rounded-xl border border-[#e4e9ef] bg-[#f8fafc] text-[#223042] lg:hidden"
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5" />
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        {/* --- BRAND LOGO --- */}
+        <Link
+          to="/"
+          className="flex items-center gap-2 group transition-transform hover:scale-[1.02]"
+        >
+          <span className="text-2xl font-black tracking-tighter text-[#111827] uppercase">
+            ETHIO <span className="text-[#006666]">SERVICE</span>
+          </span>
+        </Link>
+
+        {/* --- ACTIONS SECTION --- */}
+        <div className="flex items-center gap-5">
+          {/* --- DECORATED NOTIFICATION BELL --- */}
+          <button className="relative group p-2.5 rounded-2xl bg-gray-50 border border-gray-100 text-gray-400 hover:text-[#006666] hover:bg-white hover:shadow-xl hover:shadow-teal-900/5 transition-all duration-300">
+            <Bell
+              size={20}
+              className="group-hover:rotate-12 transition-transform"
+            />
+
+            {/* Animated Ping Notification Dot */}
+            <span className="absolute top-2.5 right-2.5 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#006666] border-2 border-white"></span>
+            </span>
           </button>
 
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#59d61c] text-white shadow-[0_14px_28px_-18px_rgba(89,214,28,0.55)] sm:h-11 sm:w-11">
-            <Sparkles className="h-5 w-5" />
+          {/* --- PROFILE DROPDOWN --- */}
+          <div className="relative">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className={`flex items-center gap-3 p-1.5 pl-3 rounded-[22px] transition-all duration-300 border ${
+                isOpen
+                  ? "bg-white border-gray-200 shadow-lg"
+                  : "bg-white border-transparent hover:border-gray-200"
+              }`}
+            >
+              <div className="text-right hidden sm:block">
+                <p className="text-[10px] font-black text-[#006666] uppercase tracking-widest leading-none mb-1">
+                  {user?.role === "technician"
+                    ? "Verified Pro"
+                    : "Premium Member"}
+                </p>
+                <p className="text-sm font-bold text-[#111827] leading-none">
+                  {user?.username?.split(" ")[0] || "Account"}
+                </p>
+              </div>
+
+              <ProfileAvator user={user} size="sm" />
+
+              <ChevronDown
+                size={14}
+                className={`text-gray-400 transition-transform duration-500 ${isOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {/* --- DROPDOWN CONTENT --- */}
+            {isOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setIsOpen(false)}
+                />
+                <div className="absolute right-0 mt-4 w-64 bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 py-3 px-2 z-20 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300">
+                  <div className="px-4 py-4 mb-2 bg-gray-50/50 rounded-[24px] mx-1">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">
+                      Connected as
+                    </p>
+                    <p className="text-sm font-bold text-[#111827] truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-gray-600 hover:bg-[#F0FDF4] hover:text-[#006666] transition-all group"
+                    >
+                      <LayoutDashboard
+                        size={18}
+                        className="opacity-40 group-hover:opacity-100 transition-opacity"
+                      />
+                      Dashboard
+                    </Link>
+
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-gray-600 hover:bg-[#F0FDF4] hover:text-[#006666] transition-all group"
+                    >
+                      <User
+                        size={18}
+                        className="opacity-40 group-hover:opacity-100 transition-opacity"
+                      />
+                      My Profile
+                    </Link>
+
+                    <Link
+                      to="/settings"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-gray-600 hover:bg-[#F0FDF4] hover:text-[#006666] transition-all group"
+                    >
+                      <Settings
+                        size={18}
+                        className="opacity-40 group-hover:opacity-100 transition-opacity"
+                      />
+                      Settings
+                    </Link>
+
+                    <div className="h-px bg-gray-100 my-2 mx-4" />
+
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        signOut();
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all group"
+                    >
+                      <LogOut
+                        size={18}
+                        className="opacity-40 group-hover:opacity-100 transition-opacity"
+                      />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-
-          <div className="min-w-0">
-            <p className="truncate text-[1.1rem] font-semibold tracking-[-0.03em] text-[#3db40e] sm:text-[1.35rem]">
-              Ethio-service
-            </p>
-            <p className="hidden truncate text-xs text-[#6c7886] sm:block md:text-sm">
-              {currentPage.subtitle}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          {/* <div className="hidden text-right md:block">
-            <p className="text-sm font-semibold text-[#1e2b3b]">
-              {displayName}
-            </p>
-            <p className="text-xs uppercase tracking-[0.18em] text-[#8b97a6]">
-              {role === "technician" ? "Technician" : "Customer"}
-            </p>
-          </div> */}
-
-          <button
-            type="button"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#e4e9ef] bg-white text-[#273345] transition hover:bg-[#f7fafb]"
-            aria-label="Notifications"
-          >
-            <Bell className="h-3 w-3" />
-          </button>
-
-          {/* <div className="relative grid h-10 w-10 place-items-center rounded-full bg-[#eefbe8] text-sm font-semibold text-[#3db40e] sm:h-11 sm:w-11">
-            {initials}
-            <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#59d61c]" />
-          </div> */}
-          <ProfileAvator user={user} />
         </div>
       </div>
     </header>

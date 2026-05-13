@@ -245,9 +245,16 @@ export async function initializeSubscriptionPayment({
   planName,
 }) {
   try {
+    console.log("Initializing payment for:", {
+      userId,
+      email,
+      amount,
+      planName,
+    });
     const { data, error } = await supabase.functions.invoke("pay-chapa", {
       body: { user_id: userId, email, amount, plan_type: planName },
     });
+    console.log("Payment initialization response:", data, error);
     if (error) throw error;
     return { success: true, checkoutUrl: data.data.checkout_url };
   } catch (error) {
