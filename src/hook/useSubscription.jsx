@@ -2,15 +2,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../service/supaBaseConf";
 
 export default function useSubscription(userId) {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["subscription"],
+  return useQuery({
+    queryKey: ["subscription", userId], // Added userId to key for cache safety
+    enabled: !!userId,
     queryFn: async () => {
-      let { data, isLoading, error } = await supabase
+      // Use unique names (subData, subError) to avoid shadowing
+      const { data: subData, error: subError } = await supabase
         .from("subscriptions")
         .select("*")
         .eq("user_id", userId);
-      return { data, isLoading, error };
+
+      if (subError) throw subError;
+      return { data: subData || [] };
     },
   });
-  return { subscriptiondata: data, isLoading, error };
 }

@@ -117,9 +117,9 @@ function AppRouter() {
           />
         </Route>
 
-        <Route path="/subscription" element={<SubscriptionPage />}>
-          <Route path="/subscription/success" element={<PaymentSuccess />} />
-        </Route>
+        <Route path="/subscription" element={<SubscriptionPage />} />
+
+        <Route path="/subscription/success" element={<PaymentSuccess />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

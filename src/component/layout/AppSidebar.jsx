@@ -17,7 +17,7 @@ import useSubscription from "../../hook/useSubscription";
 function AppSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { role, signOut, user } = useAuth();
-  const { subscriptiondata } = useSubscription(user?.id);
+  const { data: subResult, isLoading: subLoading } = useSubscription(user?.id);
   const [darkMode, setDarkMode] = useState(() => {
     return (
       localStorage.getItem("theme") === "dark" ||
@@ -25,7 +25,8 @@ function AppSidebar({ isOpen, onClose }) {
         window.matchMedia("(prefers-color-scheme: dark)").matches)
     );
   });
-  console.log("Sidebar subscription data:", subscriptiondata?.data);
+
+  const isPro = subResult?.data && subResult.data.length > 0;
   useEffect(() => {
     const root = document.documentElement;
     if (darkMode) {
@@ -48,7 +49,7 @@ function AppSidebar({ isOpen, onClose }) {
     { to: "/services", label: "Services", icon: BriefcaseBusiness },
     { to: "/technicians", label: "Technicians", icon: UserRound },
     { to: "/support", label: "Support", icon: LifeBuoy },
-    ...(role === "technician" && subscriptiondata?.data.length == 0
+    ...(role === "technician" && !isPro
       ? [{ to: "/subscription", label: "Subscription", icon: LifeBuoy }]
       : []),
   ];

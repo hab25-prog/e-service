@@ -86,16 +86,10 @@ function SubscriptionPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get("status");
 
-    // IMPORTANT: Check these logs in your browser console
-    console.log("DEBUG: Status from URL:", status);
-    console.log("DEBUG: Subscription status:", subscription);
-
-    async function finalizePayment() {
-      // SCENARIO A: User just came back from Chapa with success
+    async function handlePaymentFlow() {
+      // 1. SUCCESS CHECK: If status is 'success', SAVE to DB and don't redirect yet
       if (status === "success" && user?.id) {
         const pending = JSON.parse(localStorage.getItem("pending_plan"));
-        console.log("DEBUG: Found pending plan in storage:", pending);
-
         if (pending) {
           setLoading(true);
           try {
@@ -104,11 +98,9 @@ function SubscriptionPage() {
               planName: pending.name,
               price: pending.price,
             });
-
             if (res.success) {
               localStorage.removeItem("pending_plan");
               toast.success("Subscription activated!");
-              // Clean the URL and redirect home
               navigate("/", { replace: true });
             }
           } catch (err) {
@@ -117,17 +109,17 @@ function SubscriptionPage() {
             setLoading(false);
           }
         }
+        return; // Stop here so we don't hit the auto-redirect below
       }
-      // SCENARIO B: User is already subscribed and NOT in a success flow
-      // We only redirect if status is NOT "success"
-      else if (subscription && status !== "success") {
-        console.log("DEBUG: User already has a sub, redirecting home...");
+
+      // 2. AUTO-REDIRECT: Only move home if they are already Pro and NOT in a payment flow
+      if (subscription?.data?.length > 0 && !status && !isLoading) {
         navigate("/");
       }
     }
 
     if (!subLoading) {
-      finalizePayment();
+      handlePaymentFlow();
     }
   }, [user, subscription, subLoading, navigate]); // Added subscription to dependencies
 
@@ -169,9 +161,7 @@ function SubscriptionPage() {
       setLoading(false);
     }
   };
-  // if (subscription) {
-  //   navigate("/");
-  // }
+
   if (loading || subLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
