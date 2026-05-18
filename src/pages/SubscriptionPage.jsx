@@ -9,6 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import useAuth from "../context/useAuth";
 import { toast } from "sonner";
 import {
@@ -64,6 +65,7 @@ const plans = [
 
 function SubscriptionPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -89,31 +91,63 @@ function SubscriptionPage() {
     async function handlePaymentFlow() {
       // 1. SUCCESS CHECK: If status is 'success', SAVE to DB and don't redirect yet
       if (status === "success" && user?.id) {
+        console.log("=== PAYMENT SUCCESS DETECTED ===");
         const pending = JSON.parse(localStorage.getItem("pending_plan"));
+        const txRef = localStorage.getItem("payment_tx_ref");
+        console.log("Pending Plan:", pending);
+        console.log("TX Ref:", txRef);
+
         if (pending) {
           setLoading(true);
           try {
+            console.log("Calling saveSubscription with:", {
+              userId: user.id,
+              planName: pending.name,
+              price: pending.price,
+              txRef: txRef,
+            });
+
             const res = await saveSubscription({
               userId: user.id,
               planName: pending.name,
               price: pending.price,
+              txRef: txRef,
             });
+
+            console.log("Save Subscription Response:", res);
+
             if (res.success) {
+              // Invalidate subscription cache to force refetch
+              await queryClient.invalidateQueries({
+                queryKey: ["subscription"],
+              });
+
               localStorage.removeItem("pending_plan");
+              localStorage.removeItem("payment_tx_ref");
               toast.success("Subscription activated!");
-              navigate("/", { replace: true });
+
+              setTimeout(() => {
+                navigate("/", { replace: true });
+              }, 1000);
+            } else {
+              console.error("Subscription save failed:", res.error);
+              toast.error("Failed to save subscription: " + res.error);
             }
           } catch (err) {
             console.error("Payment Save Error:", err);
+            toast.error("Failed to activate subscription: " + err.message);
           } finally {
             setLoading(false);
           }
+        } else {
+          console.warn("No pending plan found in localStorage");
+          toast.error("Payment data missing, please try again");
         }
         return; // Stop here so we don't hit the auto-redirect below
       }
 
       // 2. AUTO-REDIRECT: Only move home if they are already Pro and NOT in a payment flow
-      if (subscription?.data?.length > 0 && !status && !isLoading) {
+      if (subscription?.data?.length > 0 && !status && !subLoading) {
         navigate("/");
       }
     }
@@ -121,7 +155,7 @@ function SubscriptionPage() {
     if (!subLoading) {
       handlePaymentFlow();
     }
-  }, [user, subscription, subLoading, navigate]); // Added subscription to dependencies
+  }, [user, subscription, subLoading, navigate, queryClient]); // Added queryClient to dependencies
 
   const handlePlanAction = async (plan) => {
     if (!user) return toast.error("Please login first");
@@ -144,7 +178,11 @@ function SubscriptionPage() {
   const startChapaPayment = async () => {
     if (!selectedPlan || !user) return;
     setLoading(true);
-    localStorage.setItem("pending_plan", JSON.stringify(selectedPlan));
+    const pendingPlanData = {
+      name: selectedPlan.name,
+      price: selectedPlan.price,
+    };
+    localStorage.setItem("pending_plan", JSON.stringify(pendingPlanData));
     console.log("Starting payment for plan:", selectedPlan, "and user:", user);
     const result = await initializeSubscriptionPayment({
       userId: user.id,
@@ -154,6 +192,10 @@ function SubscriptionPage() {
     });
     console.log("Payment initialization result:", result);
     if (result.success && result.checkoutUrl) {
+      // Store tx_ref for verification after payment
+      if (result.txRef) {
+        localStorage.setItem("payment_tx_ref", result.txRef);
+      }
       console.log("Redirecting to checkout URL:", result.checkoutUrl);
       window.location.href = result.checkoutUrl;
     } else {

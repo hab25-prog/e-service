@@ -203,10 +203,11 @@
 }
 
 .ld {
-  height: 22px;
-  width: 8px;
+  height: 26px;
+  width: 9px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #59d61c 0%, #35a40b 100%);
+  background: linear-gradient(180deg, #7df542 0%, #35a40b 100%);
+  box-shadow: 0 0 12px rgba(89, 214, 28, 0.35);
 }
 
 .loader_1 {

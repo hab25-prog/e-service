@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchJobStatuses } from "../service/apiEndPoint";
 import useAuth from "../context/useAuth";
 
-function useJobStatuses(options = {}) {
+function useJobStatuses() {
   const { user } = useAuth();
   const { data } = useQuery({
-    queryKey: ["jobs", user?.id],
+    queryKey: ["jobs"],
     queryFn: () => fetchJobStatuses(user.id),
     // ONLY run this query if user.id is truthy
     enabled: !!user?.id,

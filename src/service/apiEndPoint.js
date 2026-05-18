@@ -31,7 +31,8 @@ export async function signUpCustomer({
   if (configError) return configError;
 
   try {
-    const { data: profileData } = uploadFile(profilePicture, fullName);
+    const { data: profileData } = await uploadFile(profilePicture, fullName);
+    console.log("Profile picture upload result:", profileData);
     const { data, error } = await supabase.auth.signUp({
       email: normalizeText(email, { lowercase: true }),
       password,
@@ -56,7 +57,7 @@ export async function signUpTechnician({
   email,
   password,
   fullName,
-  phone_number,
+  phone,
   specialty,
   city,
   catagorie_id,
@@ -87,7 +88,7 @@ export async function signUpTechnician({
       options: {
         data: {
           full_name: normalizeText(fullName),
-          phone_number: normalizeText(phone_number),
+          phone_number: normalizeText(phone),
           specialty: normalizeText(specialty),
           city: normalizeText(city),
           category_id: catagorie_id,
@@ -137,7 +138,7 @@ export async function login(email, password) {
       ...authData.user,
       avatar_url: finalImageUrl,
     };
-
+    console.log("User object with image URL:", userWithImage);
     return {
       success: true,
       user: userWithImage,
@@ -165,17 +166,25 @@ export async function fetchCategories() {
   return { success: true, data };
 }
 
-export async function fetchTechniciansByCategory(categoryId) {
+export async function fetchTechnicians() {
   const { data, error } = await supabase
-    .from("technician_details")
+    .from("profiles")
     .select(
-      `id, bio, rating_avg, base_fee, profiles (full_name, avatar_url, phone_number)`,
+      `
+      *,
+      technician_details (
+        *
+      )
+    `,
     )
-    .eq("category_id", categoryId)
-    .eq("is_verified", true);
+    .eq("role", "technician");
 
-  if (error) return { success: false, error: error.message };
-  return { success: true, data };
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return data;
 }
 
 // --- SUBSCRIPTION & PAYMENTS ---
@@ -206,28 +215,55 @@ export async function startFreeTrial(userId) {
 /**
  * Manually save a subscription after frontend payment success
  */
-export async function saveSubscription({ userId, planName, price }) {
-  const endDate = new Date();
-  const monthsToAdd = planName === "Yearly" ? 12 : 1;
-  endDate.setMonth(endDate.getMonth() + monthsToAdd);
+export async function saveSubscription({ userId, planName, price, txRef }) {
+  try {
+    const endDate = new Date();
+    const monthsToAdd =
+      planName === "Yearly" || planName === "Yearly Elite" ? 12 : 1;
+    endDate.setMonth(endDate.getMonth() + monthsToAdd);
 
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .insert([
-      {
-        user_id: userId,
-        plan_type: planName.toLowerCase(),
-        price: price,
-        status: "active",
-        end_date: endDate.toISOString(),
-      },
-    ])
-    .select()
-    .single();
+    console.log("saveSubscription - Input params:", {
+      userId,
+      planName,
+      price,
+      txRef,
+      endDate: endDate.toISOString(),
+    });
 
-  return error
-    ? { success: false, error: error.message }
-    : { success: true, data };
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .insert([
+        {
+          user_id: userId,
+          plan_type: planName.toLowerCase().replace(/\s+/g, "_"),
+          price: price,
+          status: "active",
+          end_date: endDate.toISOString(),
+          tx_ref: txRef,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("saveSubscription - Database Error:", error);
+      return { success: false, error: error.message };
+    }
+
+    // console.log("saveSubscription - Success:", data);
+    const { data: technicianData, error: technicianError } = await supabase
+      .from("technician_details")
+      .update([{ is_verified: true }])
+      .eq("id", userId);
+    console.log("Technician verification result:", {
+      technicianData,
+      technicianError,
+    });
+    return { success: true, data };
+  } catch (err) {
+    console.error("saveSubscription - Catch Error:", err);
+    return { success: false, error: err.message };
+  }
 }
 export async function fetchJobStatuses(id) {
   const { data, error } = await supabase
@@ -252,11 +288,15 @@ export async function initializeSubscriptionPayment({
       planName,
     });
     const { data, error } = await supabase.functions.invoke("pay-chapa", {
-      body: { user_id: userId, email, amount, plan_type: planName },
+      body: { user_id: userId, email, amount, plan_name: planName },
     });
     console.log("Payment initialization response:", data, error);
     if (error) throw error;
-    return { success: true, checkoutUrl: data.data.checkout_url };
+    return {
+      success: true,
+      checkoutUrl: data.data.checkout_url,
+      txRef: data.tx_ref,
+    };
   } catch (error) {
     return { success: false, error: error.message };
   }

@@ -4,6 +4,7 @@ import useAuth from "../context/useAuth";
 import Loader from "../pages/Loader";
 import Profile from "../pages/Proifle";
 import PaymentSuccess from "../pages/PaymentSuccess";
+import { User } from "lucide-react";
 
 // Lazy Load Components
 const AppLayout = lazy(() => import("../component/layout/AppLayout"));
@@ -19,13 +20,14 @@ const Support = lazy(() => import("../pages/Support"));
 const TechDashboard = lazy(() => import("../pages/TechDashboard"));
 
 const SubscriptionPage = lazy(() => import("../pages/SubscriptionPage")); // Lazy loaded
+const DebugSubscription = lazy(() => import("../pages/DebugSubscription")); // Debug tool
 const TechnicianList = lazy(() => import("../pages/TechnicianList"));
 const UserDashboard = lazy(() => import("../pages/UserDashboard"));
 
 function AppRouter() {
-  const { isAuthenticated, isLoading, role } = useAuth();
+  const { isAuthenticated, isLoading, role } = useAuth(); // Use normalized role from AuthProvider
   const appRoles = ["customer", "technician"];
-
+  console.log("AppRouter - Auth State:", role);
   // 1. Critical: Wait for the AuthProvider to finish its DB check
   if (isLoading) {
     return <Loader />;
@@ -79,7 +81,7 @@ function AppRouter() {
           element={
             <ProtectedRoute
               isAuthenticated={isAuthenticated}
-              userRole={role}
+              userRole={role} // Use normalized role
               allowedRoles={appRoles}
             >
               <AppLayout />
@@ -87,14 +89,14 @@ function AppRouter() {
           }
         >
           {/* Shared Routes */}
-          <Route path="/profile" element={<Profile />} />
+          <Route path="profile" element={<Profile />} />
           <Route path="/services" element={<Home />} />
           <Route path="/technicians" element={<TechnicianList />} />
           <Route path="/support" element={<Support />} />
 
           {/* Dashboard Redirect Logic */}
           <Route
-            path="dashboard"
+            path="/dashboard"
             element={
               role === "technician" ? (
                 <Navigate to="/tech/dashboard" replace />
@@ -105,7 +107,7 @@ function AppRouter() {
           />
 
           <Route
-            path="tech/dashboard"
+            path="/tech/dashboard"
             element={
               // Use the same string your AuthProvider uses (likely "user" or "customer")
               role === "customer" ? (
@@ -120,6 +122,7 @@ function AppRouter() {
         <Route path="/subscription" element={<SubscriptionPage />} />
 
         <Route path="/subscription/success" element={<PaymentSuccess />} />
+        <Route path="/debug/subscription" element={<DebugSubscription />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

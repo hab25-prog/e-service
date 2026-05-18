@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,7 +30,7 @@ serve(async (req) => {
         email: email,
         tx_ref: tx_ref,
         callback_url: "https://your-domain.com/api/verify", // Change this when you have a live URL
-        return_url: `http://localhost:5173/tech/subscription?status=success`,
+        return_url: `http://localhost:5173/tech/subscription?status=success&tx_ref=${tx_ref}`,
         // Flat structure for customization is often safer with Chapa
         "customization[title]": "Technician Subscription",
         "customization[description]": `Payment for ${plan_name} plan`,
@@ -38,7 +39,11 @@ serve(async (req) => {
 
     const result = await response.json()
 
-    return new Response(JSON.stringify(result), {
+    // Return tx_ref along with checkout URL so frontend can track it
+    return new Response(JSON.stringify({
+      ...result,
+      tx_ref: tx_ref,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     })

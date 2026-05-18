@@ -3,13 +3,7 @@ import { api } from "../service/api";
 
 function useBookings(filters = {}, options = {}) {
   return useQuery({
-    queryKey: [
-      "bookings",
-      filters.ownerId ?? "",
-      filters.ownerEmail ?? "",
-      filters.technicianId ?? "",
-      filters.technicianName ?? "",
-    ],
+    queryKey: ["bookings"],
     queryFn: async () => {
       const result = await api.listJobs(filters);
       return result.jobs;

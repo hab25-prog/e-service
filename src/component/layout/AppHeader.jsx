@@ -61,7 +61,7 @@ function AppHeader() {
                     : "Premium Member"}
                 </p>
                 <p className="text-sm font-bold text-[#111827] leading-none">
-                  {user?.username?.split(" ")[0] || "Account"}
+                  {user?.full_name?.split(" ")[0] || "Account"}
                 </p>
               </div>
 

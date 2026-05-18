@@ -37,7 +37,7 @@ function AppSidebar({ isOpen, onClose }) {
       localStorage.setItem("theme", "light");
     }
   }, [darkMode]);
-
+  console.log("role:", user, "isPro:", isPro);
   const dashboardPath =
     role === "technician" ? "/tech/dashboard" : "/dashboard";
   const primaryLinks = [

@@ -60,8 +60,8 @@ function AuthProvider({ children }) {
     });
 
     // 3. Fetch Role (Priority: Metadata > Database > Default)
-    let currentRole = nextUser.user_metadata?.requested_role;
-
+    let currentRole = null;
+    // console.log("Role from metadata:", nextUser.id);
     if (!currentRole) {
       const { data } = await supabase
         .from("profiles")
@@ -71,7 +71,13 @@ function AuthProvider({ children }) {
       currentRole = data?.role;
     }
 
-    setRole(normalizeRole(currentRole || "user"));
+    // Debugging logs added to verify role assignment
+    console.log("Profile role from database:", currentRole);
+
+    const normalizedRole = currentRole || "user";
+    console.log("Normalized role:", normalizedRole);
+
+    setRole(normalizeRole(normalizedRole));
     setIsLoading(false);
   }, []);
 
