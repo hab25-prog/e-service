@@ -2,10 +2,22 @@ import { ArrowRight, BadgeCheck, Clock3, MapPin, Star } from "lucide-react";
 import { supabase } from "../../service/supaBaseConf";
 
 function TechnicianCard({ technician, onBook }) {
-  const { data } = supabase.storage
-    .from("profile_pic")
-    .getPublicUrl(technician.avatar_url);
-  const finalImageUrl = data?.publicUrl;
+  // Support both supabase and mockData technician objects
+  let finalImageUrl = "";
+  if (technician.avatar_url) {
+    // If avatar_url exists, try to get public URL from supabase
+    try {
+      const { data } = supabase.storage
+        .from("profile_pic")
+        .getPublicUrl(technician.avatar_url);
+      finalImageUrl = data?.publicUrl || "";
+    } catch (e) {
+      finalImageUrl = "";
+    }
+  } else if (technician.photo) {
+    // Fallback to photo field from mockData
+    finalImageUrl = technician.photo;
+  }
 
   console.log("Rendering TechnicianCard for:", technician);
   return (
@@ -13,7 +25,7 @@ function TechnicianCard({ technician, onBook }) {
       <div className="relative">
         <img
           src={finalImageUrl}
-          alt={`${technician.full_name} profile`}
+          alt={`${technician.name || technician.full_name || "Technician"} profile`}
           className="h-56 w-full object-cover"
           loading="lazy"
         />

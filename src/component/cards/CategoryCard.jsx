@@ -1,12 +1,4 @@
-function CategoryCard({
-  title,
-  localTitle,
-  description,
-  icon,
-  eta,
-  startingPrice,
-  onClick,
-}) {
+function CategoryCard({ title, localTitle, description, icon, eta, onClick }) {
   const IconComponent = icon;
 
   return (

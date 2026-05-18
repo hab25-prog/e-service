@@ -17,7 +17,7 @@ import useSubscription from "../../hook/useSubscription";
 function AppSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { role, signOut, user } = useAuth();
-  const { data: subResult, isLoading: subLoading } = useSubscription(user?.id);
+  const { data: subResult } = useSubscription(user?.id);
   const [darkMode, setDarkMode] = useState(() => {
     return (
       localStorage.getItem("theme") === "dark" ||
@@ -52,17 +52,16 @@ function AppSidebar({ isOpen, onClose }) {
     ...(role === "technician" && !isPro
       ? [{ to: "/subscription", label: "Subscription", icon: LifeBuoy }]
       : []),
+    ...(role === "admin"
+      ? [
+          {
+            to: "/admin/dashboard",
+            label: "Admin Dashboard",
+            icon: LayoutDashboard,
+          },
+        ]
+      : []),
   ];
-
-  const initials =
-    user?.user_metadata?.full_name
-      ?.split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ||
-    user?.email?.slice(0, 2)?.toUpperCase() ||
-    "ET";
 
   async function handleSignOut() {
     await signOut();

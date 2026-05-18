@@ -5,9 +5,9 @@ function ProfileAvator({ user, size = "md" }) {
   // Debug log to check props
   // Map Supabase names to local variables for cleaner JSX
   const fullName = user?.full_name || user?.fullName || "User";
-  const profilePic = user?.avatar_url || user?.profilePicture || null;
+  const profilePic = user?.avatar_url;
   const isVerified = user?.isVerified ?? false; // Match your technician_details column
-  console.log("ProfileAvator Props:", user);
+  // console.log("ProfileAvator Props:", user);
 
   const sizes = {
     sm: "w-10 h-10 text-xs",

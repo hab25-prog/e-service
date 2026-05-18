@@ -1,3 +1,4 @@
+// src/context/AuthProvider.jsx
 import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   login,
@@ -7,96 +8,79 @@ import {
 } from "../service/apiEndPoint";
 import { hasSupabaseConfig, supabase } from "../service/supaBaseConf";
 import AuthContext from "./authContext";
+// import Profile from "../pages/Proifle";
 
 const normalizeRole = (roleValue) => {
   const role = roleValue?.toLowerCase();
   if (role === "technician") return "technician";
-  if (role === "user" || role === "customer") return "customer";
-  return "guest";
+  if (role === "admin") return "admin";
+  return "customer";
+};
+
+const normalizeProfileData = (profileData) => {
+  console.log("Raw Profile Data:", profileData);
+  const updateProfileData = {
+    ...profileData,
+    avatar_url:
+      supabase.storage.from("profile_pic").getPublicUrl(profileData.avatar_url)
+        ?.data?.publicUrl || null,
+  };
+  console.log("Normalized Profile Data:", updateProfileData.avatar_url);
+  return updateProfileData;
 };
 
 function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [role, setRole] = useState("guest");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Memoized to prevent re-triggering useEffect
   const applySession = useCallback(async (nextSession) => {
     if (!nextSession) {
       setSession(null);
       setUser(null);
+      setProfile(null);
       setRole("guest");
       setIsLoading(false);
       return;
     }
 
     const nextUser = nextSession.user;
-    console.log("Applying session for user:", nextUser);
-    // 1. Resolve the Avatar URL
-    const storagePath = nextUser.user_metadata?.avatar_url;
-    let finalAvatarUrl = null;
 
-    if (storagePath) {
-      // If the path is already a full URL (from Google/Facebook), use it.
-      // Otherwise, generate the Supabase Public URL.
-      if (storagePath.startsWith("http")) {
-        finalAvatarUrl = storagePath;
-      } else {
-        const { data } = supabase.storage
-          .from("profile_pic")
-          .getPublicUrl(storagePath);
-        finalAvatarUrl = data.publicUrl;
-      }
+    // Fetch Full Profile Data
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select(`*, technician_details(*)`)
+      .eq("id", nextUser.id)
+      .single();
+
+    if (profileData) {
+      const normalizedProfile = normalizeProfileData(profileData);
+      setProfile(normalizedProfile);
+      setRole(normalizeRole(profileData.role));
     }
-
-    // 2. Set the User State with the resolved URL
+    console.log("Profile Data:", profile?.avatar_url);
     setSession(nextSession);
     setUser({
       ...nextUser.user_metadata,
-      id: nextUser.id, // Crucial for database queries
-      avatar_url: finalAvatarUrl, // The UI now has the full URL
+      id: nextUser.id,
+      email: nextUser.email,
     });
-
-    // 3. Fetch Role (Priority: Metadata > Database > Default)
-    let currentRole = null;
-    // console.log("Role from metadata:", nextUser.id);
-    if (!currentRole) {
-      const { data } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", nextUser.id)
-        .single();
-      currentRole = data?.role;
-    }
-
-    // Debugging logs added to verify role assignment
-    console.log("Profile role from database:", currentRole);
-
-    const normalizedRole = currentRole || "user";
-    console.log("Normalized role:", normalizedRole);
-
-    setRole(normalizeRole(normalizedRole));
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
     let isActive = true;
-
     async function initAuth() {
       if (!hasSupabaseConfig || !supabase) {
-        if (isActive) {
-          setError("Database configuration missing.");
-          setIsLoading(false);
-        }
+        setIsLoading(false);
         return;
       }
-
       const { data } = await supabase.auth.getSession();
       if (isActive) await applySession(data?.session);
     }
-
     initAuth();
 
     const {
@@ -111,42 +95,25 @@ function AuthProvider({ children }) {
     };
   }, [applySession]);
 
-  // --- ACTIONS ---
-
-  const signInWithPassword = async (email, password) => {
-    setError(null);
-    setIsLoading(true); // Show loader during login attempt
-    const result = await login(email, password);
-
-    if (!result.success) {
-      setError(result.error);
-      setIsLoading(false);
-    }
-    // Note: applySession will be called automatically by onAuthStateChange
-    return result;
-  };
-
-  const signOut = async () => {
-    const result = await logout();
-    if (!result.success) setError(result.error);
-    return result;
-  };
+  const clearAuthError = () => setError(null);
 
   const value = useMemo(
     () => ({
       session,
       user,
+      profile,
       role,
       isLoading,
       isAuthenticated: !!session,
       error,
-      signIn: signInWithPassword,
-      signUpCustomer: (p) => signUpCustomer(p),
-      signUpTechnician: (p) => signUpTechnician(p),
-      signOut,
-      clearAuthError: () => setError(null),
+      signIn: login,
+      signOut: logout,
+      signUpCustomer,
+      signUpTechnician,
+      refreshProfile: () => applySession(session),
+      clearAuthError,
     }),
-    [session, user, role, isLoading, error],
+    [session, user, profile, role, isLoading, error, applySession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

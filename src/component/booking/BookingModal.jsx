@@ -24,9 +24,7 @@ function BookingModal({ isOpen, onClose, service, technician }) {
   const [landmark, setLandmark] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [urgency, setUrgency] = useState("standard");
-  const [paymentMethod, setPaymentMethod] = useState(
-    paymentOptions[0]?.id ?? "telebirr",
-  );
+  const [paymentMethod] = useState(paymentOptions[0]?.id ?? "telebirr");
   const [confirmationId, setConfirmationId] = useState("");
   const [submissionError, setSubmissionError] = useState("");
 

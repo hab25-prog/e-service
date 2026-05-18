@@ -301,7 +301,30 @@ export async function initializeSubscriptionPayment({
     return { success: false, error: error.message };
   }
 }
-
+export async function getAllcustomers() {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "customer");
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    return { success: false, error: error.message };
+  }
+}
+export async function getAllTechnicians() {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "technician");
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching technicians:", error);
+    return { success: false, error: error.message };
+  }
+}
 // --- STORAGE HELPER ---
 
 async function uploadFile(file, name) {

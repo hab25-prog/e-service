@@ -17,16 +17,10 @@ function TechnicianList() {
   const { technician, error, isLoading } = useTechnician();
   const { role } = useAuth();
   console.log("technician data:", technician);
-  if (isLoading) {
-    return <Loader />;
-  }
-  // console.log("User role:", user);
-  // Restrict access to customers only
-  if (role !== "customer") {
-    return <Navigate to="/dashboard" replace />;
-  }
 
-  // Generate city list
+  // Always call hooks at the top level
+  // Loading and role checks after hooks
+
   const cities = useMemo(() => {
     return [
       "all",
@@ -38,7 +32,6 @@ function TechnicianList() {
     ];
   }, [technician]);
 
-  // Filter technicians
   const filteredTechnicians = useMemo(() => {
     return (
       technician?.filter((tech) => {
@@ -61,9 +54,12 @@ function TechnicianList() {
 
   console.log("Technicians:", filteredTechnicians);
 
-  // Loading State
-
-  // Error State
+  if (isLoading) {
+    return <Loader />;
+  }
+  if (role !== "customer") {
+    return <Navigate to="/dashboard" replace />;
+  }
   if (error) {
     return (
       <section className="surface-panel rounded-[30px] p-8 text-center">
