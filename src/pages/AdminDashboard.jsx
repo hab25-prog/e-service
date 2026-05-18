@@ -32,7 +32,7 @@ function AdminDashboard() {
     isLoading: customersLoading,
     error: customersError,
   } = useCustomers();
-
+  console.log("Technicians Data:", techniciansData);
   // Stats Logic
   const stats = [
     {

@@ -325,6 +325,27 @@ export async function getAllTechnicians() {
     return { success: false, error: error.message };
   }
 }
+export async function getTechnicianDetails(techId) {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select(
+        `
+        *,
+        technician_details (
+          *
+        )
+      `,
+      )
+      .eq("id", techId)
+      .single();
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching technician details:", error);
+    return { success: false, error: error.message };
+  }
+}
 // --- STORAGE HELPER ---
 
 async function uploadFile(file, name) {

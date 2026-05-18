@@ -1,397 +1,264 @@
+import { useMemo } from "react";
 import {
   ArrowRight,
-  CheckCircle2,
-  Clock3,
-  MapPin,
   ShieldCheck,
-  Wallet,
+  Star,
+  Zap,
+  MapPin,
+  CheckCircle2,
+  Sparkles,
+  Users,
+  Clock,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useAuth from "../context/useAuth";
-import heroImg from "../assets/hero.png";
-import Footer from "../component/layout/Footer";
 import Navbar from "../component/layout/Navbar";
-import {
-  paymentOptions,
-  serviceCategories,
-  serviceCoverage,
-  supportChannels,
-  trustHighlights,
-} from "../data/mockData";
+import Footer from "../component/layout/Footer";
+import { serviceCategories, serviceCoverage } from "../data/mockData";
 
 function LandingPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+
+  const heroBg =
+    "https://images.unsplash.com/photo-1621905251918-48416bd8575a?q=80&w=2069&auto=format&fit=crop";
 
   const handleExploreClick = () => {
     navigate(isAuthenticated ? "/services" : "/login");
   };
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-white font-sans text-[#0F172A] selection:bg-[#10B981]/30">
       <Navbar />
 
-      <div className="px-4 pb-10 pt-6 md:pb-14">
-        <div className="mx-auto max-w-[1680px] space-y-6 xl:space-y-8">
-          <section className="surface-panel-dark relative overflow-hidden rounded-[44px] px-6 py-7 text-white md:px-8 md:py-10 xl:px-10 xl:py-12">
-            <div className="pointer-events-none absolute left-10 top-10 h-40 w-40 rounded-full bg-[#85e5d8]/20 blur-3xl" />
-            <div className="pointer-events-none absolute bottom-0 right-0 h-56 w-56 rounded-full bg-[#f8c98f]/20 blur-3xl" />
+      {/* --- HERO SECTION --- */}
+      <section className="relative px-4 pt-6">
+        <div
+          className="mx-auto max-w-[1400px] overflow-hidden rounded-[3rem] bg-[#0F172A] text-white relative min-h-[650px] flex items-center"
+          style={{
+            backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.95) 35%, rgba(15, 23, 42, 0.3) 100%), url(${heroBg})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="relative z-10 px-8 py-16 md:px-16 md:py-24 max-w-4xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-widest text-[#10B981] backdrop-blur-md">
+              <Sparkles size={14} /> Ethiopia's Premier Technician Network
+            </div>
 
-            <div className="relative grid gap-8 xl:grid-cols-[1.06fr_0.94fr] xl:gap-10">
-              <div className="max-w-3xl">
-                <span className="kicker text-[#c8f2ec]">
-                  Built for Ethiopian households
-                </span>
-                <h1 className="page-title mt-5 text-white">
-                  Book trusted home services in a workspace that finally feels premium.
-                </h1>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-[#d5ebf3] md:text-lg">
-                  EthioTech helps customers move from search to confirmed
-                  booking with clearer pricing, verified technicians, Ethiopian
-                  payment choices, and a support flow that feels modern from the
-                  first screen.
-                </p>
+            <h1 className="mt-8 text-6xl font-black leading-[1.05] tracking-tight md:text-8xl">
+              Quality repairs. <br />
+              <span className="text-[#10B981]">Expertly handled.</span>
+            </h1>
 
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={handleExploreClick}
-                    className="btn-primary px-6 py-3 text-sm font-semibold md:text-base"
-                  >
-                    {isAuthenticated ? "Enter the app" : "Sign in to continue"}
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+            <p className="mt-8 max-w-xl text-xl leading-relaxed text-slate-300 font-medium">
+              We connect you with Addis Ababa's most skilled and verified
+              professionals. Reliable, prompt, and ready to serve your home
+              today.
+            </p>
 
-                  <Link
-                    to={isAuthenticated ? "/dashboard" : "/signup"}
-                    className="btn-secondary px-6 py-3 text-sm font-semibold md:text-base"
-                  >
-                    {isAuthenticated ? "Open dashboard" : "Create account"}
-                  </Link>
-                </div>
+            <div className="mt-10 flex flex-wrap gap-5">
+              <button
+                onClick={handleExploreClick}
+                className="flex items-center gap-3 rounded-2xl bg-[#10B981] px-10 py-5 font-bold text-white transition-all hover:bg-emerald-600 hover:shadow-[0_0_40px_-5px_rgba(16,185,129,0.6)] group"
+              >
+                Book a Technician
+                <ArrowRight
+                  size={20}
+                  className="group-hover:translate-x-2 transition-transform"
+                />
+              </button>
 
-                <div className="mt-8 flex flex-wrap gap-3">
-                  {[
-                    "Verified technicians",
-                    "Transparent pricing",
-                    "Support built in",
-                  ].map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full border border-white/12 bg-white/10 px-4 py-2 text-sm font-medium text-[#d8edf4]"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                  {[
-                    { value: "120+", label: "Active technicians" },
-                    { value: "4.8/5", label: "Average satisfaction" },
-                    { value: "35-60 min", label: "Fastest response window" },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-[28px] border border-white/12 bg-white/8 p-5 backdrop-blur-sm"
-                    >
-                      <p className="text-3xl font-semibold tracking-[-0.05em] text-white">
-                        {item.value}
-                      </p>
-                      <p className="mt-2 text-sm text-[#cbe2eb]">{item.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="relative flex items-center justify-center xl:justify-end">
-                <div className="relative w-full max-w-[42rem]">
-                  <div className="surface-panel absolute -left-3 top-6 z-10 hidden w-52 rounded-[28px] p-4 text-[#163047] md:block float-slow">
-                    <p className="kicker text-[#0d8b83]">Arrival speed</p>
-                    <p className="mt-3 text-3xl font-semibold tracking-[-0.05em]">
-                      45 min
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-[#647886]">
-                      Strongest same-day matching currently in Addis Ababa.
-                    </p>
-                  </div>
-
-                  <div className="overflow-hidden rounded-[34px] border border-white/15 bg-white/10 p-3 shadow-[0_40px_110px_-56px_rgba(5,18,31,0.88)] backdrop-blur-md">
+              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl">
+                <div className="flex -space-x-3">
+                  {[1, 2, 3].map((i) => (
                     <img
-                      src={heroImg}
-                      alt="Technician smiling while carrying tools"
-                      className="h-full w-full rounded-[28px] object-cover"
+                      key={i}
+                      className="h-10 w-10 rounded-full border-2 border-[#0F172A] object-cover"
+                      src={`https://i.pravatar.cc/100?img=${i + 10}`}
+                      alt="user"
                     />
-                  </div>
-
-                  <div className="surface-card absolute -bottom-6 right-0 z-10 w-full max-w-[18rem] rounded-[30px] p-5 text-[#163047] float-slow float-delay">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="kicker text-[#0d8b83]">Payments</p>
-                        <p className="mt-2 text-xl font-semibold tracking-[-0.04em]">
-                          Local checkout options
-                        </p>
-                      </div>
-                      <Wallet className="h-5 w-5 text-[#0d8b83]" />
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {paymentOptions.map((option) => (
-                        <span
-                          key={option.name}
-                          className="rounded-full bg-[#eef7ff] px-3 py-1.5 text-[11px] font-semibold text-[#365c78]"
-                        >
-                          {option.name}
-                        </span>
-                      ))}
-                    </div>
-
-                    <p className="mt-4 text-sm leading-6 text-[#617584]">
-                      Confirm how you want to pay before the technician even
-                      arrives.
-                    </p>
-                  </div>
+                  ))}
                 </div>
+                <p className="text-sm font-bold text-slate-300">
+                  <span className="text-white">4.9/5</span> Rating
+                </p>
               </div>
             </div>
-          </section>
 
-          <section className="grid gap-4 lg:grid-cols-3">
-            {[
-              {
-                icon: ShieldCheck,
-                title: "Verified professionals",
-                text: trustHighlights[0].text,
-              },
-              {
-                icon: Wallet,
-                title: "Transparent pricing",
-                text: trustHighlights[1].text,
-              },
-              {
-                icon: CheckCircle2,
-                title: "Fast matching",
-                text: trustHighlights[2].text,
-              },
-            ].map((item) => (
-              <article key={item.title} className="surface-card rounded-[32px] p-6">
-                <div className="grid h-14 w-14 place-items-center rounded-[1.2rem] bg-[#e9f7f3] text-[#0d8b83]">
-                  <item.icon className="h-5 w-5" />
-                </div>
-                <p className="mt-5 text-xl font-semibold tracking-[-0.04em] text-[#163047]">
-                  {item.title}
+            {/* Quick Stats */}
+            <div className="mt-16 flex gap-12 border-t border-white/10 pt-10">
+              <div>
+                <p className="text-3xl font-black text-white">45min</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#10B981]">
+                  Avg. Response
                 </p>
-                <p className="mt-3 text-sm leading-7 text-[#607483]">
-                  {item.text}
+              </div>
+              <div>
+                <p className="text-3xl font-black text-white">500+</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#10B981]">
+                  Verified Pros
                 </p>
-              </article>
-            ))}
-          </section>
-
-          <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-            <article className="surface-panel rounded-[38px] p-6 md:p-7">
-              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p className="kicker text-[#0d8b83]">Popular services</p>
-                  <h2 className="section-title mt-3 text-[#163047]">
-                    The categories customers open first
-                  </h2>
-                </div>
-
-                <Link
-                  to={isAuthenticated ? "/services" : "/login"}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#0d8b83]"
-                >
-                  {isAuthenticated ? "Open app services" : "Sign in to explore"}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
               </div>
-
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
-                {serviceCategories.slice(0, 4).map((service) => (
-                  <div
-                    key={service.id}
-                    className={`rounded-[30px] border border-white/70 bg-gradient-to-br ${service.accent} p-5`}
-                  >
-                    <service.icon className="h-5 w-5 text-[#0d8b83]" />
-                    <p className="mt-4 text-lg font-semibold tracking-[-0.03em] text-[#163047]">
-                      {service.title}
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-[#617584]">
-                      {service.description}
-                    </p>
-                    <div className="mt-4 flex items-center justify-between text-xs font-semibold text-[#4f6677]">
-                      <span>{service.eta}</span>
-                      <span className="rounded-full bg-white/80 px-3 py-1.5 text-[#163047]">
-                        {service.startingPrice}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <p className="text-3xl font-black text-white">100%</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#10B981]">
+                  Satisfaction
+                </p>
               </div>
-            </article>
-
-            <article className="surface-panel-dark rounded-[38px] p-6 text-white md:p-7">
-              <div className="relative">
-                <p className="kicker text-[#c8f2ec]">Coverage and support</p>
-                <h2 className="section-title mt-3 text-white">
-                  Built around real booking locations and real follow-up.
-                </h2>
-
-                <div className="mt-6 space-y-4">
-                  {serviceCoverage.map((area) => (
-                    <div
-                      key={area.city}
-                      className="rounded-[28px] border border-white/12 bg-white/8 p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-lg font-semibold text-white">
-                            {area.city}
-                          </p>
-                          <p className="mt-1 text-sm text-[#c6dfea]">
-                            {area.supportHours}
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-[#d8eff4]">
-                          {area.eta}
-                        </span>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {area.zones.slice(0, 4).map((zone) => (
-                          <span
-                            key={zone}
-                            className="rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-medium text-[#d8eff4]"
-                          >
-                            {zone}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </article>
-          </section>
-
-          <section className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
-            <article className="surface-panel rounded-[38px] p-6 md:p-7">
-              <p className="kicker text-[#0d8b83]">How it works</p>
-              <h2 className="section-title mt-3 text-[#163047]">
-                Cleaner for customers, clearer for technicians
-              </h2>
-
-              <div className="mt-6 space-y-4">
-                {[
-                  {
-                    title: "Choose the right category",
-                    text: "Browse service groups, compare starting rates, and understand the kind of support you are requesting.",
-                  },
-                  {
-                    title: "Share local details once",
-                    text: "Address, nearby landmark, urgency, and payment preference are all collected in one guided flow.",
-                  },
-                  {
-                    title: "Track the request after booking",
-                    text: "Use the customer dashboard and support area to follow status and keep communication clear.",
-                  },
-                ].map((item, index) => (
-                  <div
-                    key={item.title}
-                    className="rounded-[28px] border border-[#e6edf1] bg-[#fbfdff] p-5"
-                  >
-                    <div className="flex gap-4">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#102437] text-sm font-semibold text-white">
-                        {index + 1}
-                      </span>
-                      <div>
-                        <p className="text-lg font-semibold text-[#163047]">
-                          {item.title}
-                        </p>
-                        <p className="mt-2 text-sm leading-7 text-[#617584]">
-                          {item.text}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="surface-panel rounded-[38px] p-6 md:p-7">
-              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p className="kicker text-[#0d8b83]">Support access</p>
-                  <h2 className="section-title mt-3 text-[#163047]">
-                    Help channels that stay easy to find
-                  </h2>
-                </div>
-
-                <Link
-                  to={isAuthenticated ? "/support" : "/login"}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#0d8b83]"
-                >
-                  {isAuthenticated ? "Open support" : "Sign in for support"}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                {supportChannels.map((channel, index) => (
-                  <div
-                    key={channel.title}
-                    className="rounded-[28px] border border-[#e6edf1] bg-[#fbfdff] p-5"
-                  >
-                    <div className="grid h-12 w-12 place-items-center rounded-[1.2rem] bg-[#eef7ff] text-[#0d8b83]">
-                      {index === 0 ? (
-                        <Clock3 className="h-5 w-5" />
-                      ) : index === 1 ? (
-                        <MapPin className="h-5 w-5" />
-                      ) : (
-                        <CheckCircle2 className="h-5 w-5" />
-                      )}
-                    </div>
-                    <p className="mt-4 text-lg font-semibold text-[#163047]">
-                      {channel.title}
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-[#0d8b83]">
-                      {channel.value}
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-[#617584]">
-                      {channel.detail}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="surface-panel-dark mt-6 rounded-[32px] p-5 text-white">
-                <div className="relative">
-                  <p className="kicker text-[#c8f2ec]">Get started</p>
-                  <p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
-                    Move from discovery to booking without the UI getting in the way.
-                  </p>
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={handleExploreClick}
-                      className="btn-primary px-5 py-3 text-sm font-semibold"
-                    >
-                      {isAuthenticated ? "Enter app" : "Sign in"}
-                    </button>
-                    <Link
-                      to={isAuthenticated ? "/dashboard" : "/signup"}
-                      className="btn-secondary px-5 py-3 text-sm font-semibold"
-                    >
-                      {isAuthenticated ? "Open dashboard" : "Create account"}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </article>
-          </section>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* --- TRUST FEATURES --- */}
+      <section className="mx-auto max-w-[1200px] px-6 py-24">
+        <div className="grid gap-12 md:grid-cols-3">
+          {[
+            {
+              icon: ShieldCheck,
+              title: "Background Checked",
+              desc: "Every professional undergoes a rigorous identity and criminal record verification.",
+            },
+            {
+              icon: Zap,
+              title: "Priority Booking",
+              desc: "Book instantly and receive live updates as your technician travels to your location.",
+            },
+            {
+              icon: Users,
+              title: "Expert Support",
+              desc: "Our dedicated support team is available to ensure your job is completed perfectly.",
+            },
+          ].map((feature, i) => (
+            <div
+              key={i}
+              className="group rounded-[2rem] border border-slate-100 bg-white p-8 transition-all hover:border-[#10B981] hover:shadow-xl"
+            >
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-[#10B981] transition-transform group-hover:scale-110">
+                <feature.icon size={28} />
+              </div>
+              <h3 className="text-xl font-bold">{feature.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                {feature.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* --- CATEGORIES --- */}
+      <section className="bg-slate-50 px-6 py-24">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="mb-16 flex flex-col items-end justify-between gap-6 md:flex-row">
+            <div className="max-w-xl">
+              <h2 className="text-4xl font-black tracking-tight text-[#0F172A]">
+                Popular Services
+              </h2>
+              <p className="mt-4 text-slate-500">
+                The most booked maintenance categories across the city this
+                month.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/services")}
+              className="flex items-center gap-2 font-bold text-[#10B981] hover:gap-4 transition-all"
+            >
+              Explore All <ArrowRight size={20} />
+            </button>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {serviceCategories.slice(0, 4).map((cat) => (
+              <div
+                key={cat.id}
+                className="group bg-white rounded-[2.5rem] p-8 border border-white hover:border-[#10B981] shadow-sm hover:shadow-xl transition-all"
+              >
+                <div className="mb-6 inline-flex rounded-2xl bg-emerald-50 p-4 text-[#10B981]">
+                  <cat.icon size={28} />
+                </div>
+                <h4 className="text-xl font-bold">{cat.title}</h4>
+                <div className="mt-8 flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                    <Clock size={12} className="text-[#10B981]" /> {cat.eta}{" "}
+                    Response
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:bg-[#10B981] transition-colors">
+                    <ArrowRight size={18} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- COVERAGE MAP --- */}
+      <section className="mx-auto max-w-[1200px] px-6 py-24">
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="space-y-8">
+            <h2 className="text-4xl font-black text-[#0F172A]">
+              Now Serving Your Area
+            </h2>
+            <p className="text-slate-500 text-lg">
+              We've expanded our network to cover all major zones in Addis
+              Ababa, ensuring professional help is always close by.
+            </p>
+            <div className="space-y-4">
+              {serviceCoverage.map((area) => (
+                <div
+                  key={area.city}
+                  className="flex items-center justify-between rounded-3xl border border-slate-100 bg-white p-6 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-xl bg-slate-900 p-3 text-white">
+                      <MapPin size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold">{area.city}</h4>
+                      <p className="text-xs text-slate-400">
+                        Active Service Zone
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm font-bold text-[#10B981]">
+                    {area.eta} Arrival
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[3rem] bg-[#0F172A] p-12 text-white shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-[-20px] right-[-20px] h-64 w-64 bg-[#10B981]/10 rounded-full blur-3xl group-hover:bg-[#10B981]/20 transition-all"></div>
+            <h3 className="text-3xl font-bold mb-6">Our Promise</h3>
+            <ul className="space-y-6">
+              {[
+                "Verified Professionalism: Every tech is certified.",
+                "Transparent Communication: Direct chat and tracking.",
+                "After-Service Support: 24-hour job satisfaction window.",
+                "Reliable Scheduling: On-time arrival, every time.",
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-start gap-4">
+                  <CheckCircle2
+                    className="text-[#10B981] shrink-0 mt-1"
+                    size={20}
+                  />
+                  <span className="text-slate-300 font-medium leading-relaxed">
+                    {item}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => navigate("/signup")}
+              className="mt-10 w-full py-4 bg-white text-[#0F172A] rounded-2xl font-bold hover:bg-slate-100 transition-colors"
+            >
+              Create Free Account
+            </button>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </main>
