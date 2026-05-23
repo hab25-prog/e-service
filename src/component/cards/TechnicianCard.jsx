@@ -1,7 +1,12 @@
 import { ArrowRight, BadgeCheck, Clock3, MapPin, Star } from "lucide-react";
 import { supabase } from "../../service/supaBaseConf";
+import { useCategories } from "../../hook/useCatagorie";
 
 function TechnicianCard({ technician, onBook }) {
+  console.log(
+    "Received technician prop:",
+    technician.technician_details.categories,
+  );
   // Support both supabase and mockData technician objects
   let finalImageUrl = "";
   if (technician.avatar_url) {
@@ -54,25 +59,21 @@ function TechnicianCard({ technician, onBook }) {
 
         <div>
           <p className="text-xl font-semibold tracking-[-0.03em] text-[#1d2939]">
-            {technician?.name}
+            {technician?.full_name}
           </p>
           <p className="mt-1 text-sm leading-6 text-[#667085]">
-            {technician?.specialty}
+            {technician?.technician_details.categories.name_en}
           </p>
         </div>
 
         <div className="grid gap-2 text-sm text-[#667085]">
           <p className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-[#35a40b]" />
-            {technician?.city}
-          </p>
-          <p className="flex items-center gap-2">
-            <Clock3 className="h-4 w-4 text-[#35a40b]" />
-            {technician?.responseTime}
+            {technician?.technician_details.city}
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {/* <div className="flex flex-wrap gap-2">
           {technician?.skills?.map((skill) => (
             <span
               key={skill}
@@ -81,9 +82,9 @@ function TechnicianCard({ technician, onBook }) {
               {skill}
             </span>
           ))}
-        </div>
+        </div> */}
 
-        <div className="grid gap-3 rounded-[18px] border border-[#edf1f5] bg-[#fafbfc] px-4 py-4 text-sm text-[#667085] sm:grid-cols-2">
+        {/* <div className="grid gap-3 rounded-[18px] border border-[#edf1f5] bg-[#fafbfc] px-4 py-4 text-sm text-[#667085] sm:grid-cols-2">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#98a2b3]">
               Experience
@@ -100,12 +101,12 @@ function TechnicianCard({ technician, onBook }) {
               {`${technician?.completedJobs}+`}
             </p>
           </div>
-        </div>
+        </div> */}
 
         <button
           type="button"
           onClick={onBook}
-          className="btn-primary inline-flex w-full px-4 py-3 text-sm font-semibold"
+          className="cursor-pointer btn-primary inline-flex w-full px-4 py-3 text-sm font-semibold"
         >
           Book technician
           <ArrowRight className="h-4 w-4" />

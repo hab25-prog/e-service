@@ -47,7 +47,10 @@ function AppSidebar({ isOpen, onClose }) {
       icon: LayoutDashboard,
     },
     { to: "/services", label: "Services", icon: BriefcaseBusiness },
-    { to: "/technicians", label: "Technicians", icon: UserRound },
+
+    ...(role === "customer"
+      ? [{ to: "/technicians", label: "Technicians", icon: UserRound }]
+      : []),
     { to: "/support", label: "Support", icon: LifeBuoy },
     ...(role === "technician" && !isPro
       ? [{ to: "/subscription", label: "Subscription", icon: LifeBuoy }]

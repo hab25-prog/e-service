@@ -159,7 +159,7 @@ export async function logout() {
 export async function fetchCategories() {
   const { data, error } = await supabase
     .from("categories")
-    .select("id, name_en, name_am")
+    .select("*")
     .order("name_en", { ascending: true });
 
   if (error) return { success: false, data: [] };
@@ -173,9 +173,13 @@ export async function fetchTechnicians() {
       `
       *,
       technician_details (
-        *
+        *,
+        categories!technician_details_category_id_fkey (
+          *
+        )
       )
-    `,
+    )
+  `,
     )
     .eq("role", "technician");
 
@@ -185,6 +189,65 @@ export async function fetchTechnicians() {
   }
 
   return data;
+}
+export async function getAllcustomers() {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "customer");
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    return { success: false, error: error.message };
+  }
+}
+export async function getAllTechnicians() {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select(
+        `*,
+        technician_details (
+          *,
+        categories (
+            id,
+            name_en,   
+            name_am,   
+            icon,
+            icon_url
+          )
+        )
+      `,
+      )
+      .eq("role", "technician");
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching technicians:", error);
+    return { success: false, error: error.message };
+  }
+}
+export async function getTechnicianDetails(techId) {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select(
+        `
+        *,
+        technician_details (
+          *
+        )
+      `,
+      )
+      .eq("id", techId)
+      .single();
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching technician details:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 // --- SUBSCRIPTION & PAYMENTS ---
@@ -265,15 +328,6 @@ export async function saveSubscription({ userId, planName, price, txRef }) {
     return { success: false, error: err.message };
   }
 }
-export async function fetchJobStatuses(id) {
-  const { data, error } = await supabase
-    .from("jobs")
-    .select("id, status")
-    .eq("user_id", id)
-    .order("created_at", { ascending: false });
-  if (error) return { success: false, error: error.message };
-  return { success: true, data };
-}
 export async function initializeSubscriptionPayment({
   userId,
   email,
@@ -301,48 +355,118 @@ export async function initializeSubscriptionPayment({
     return { success: false, error: error.message };
   }
 }
-export async function getAllcustomers() {
+
+// JOBS & BOOKINGS
+export async function createBooking(bookingData) {
+  console.log("Creating booking with data:", bookingData);
   try {
     const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("role", "customer");
+      .from("jobs")
+      .insert({ ...bookingData });
+    if (error) throw error;
+    console.log("Booking created successfully:", data);
     return { success: true, data };
   } catch (error) {
-    console.error("Error fetching customers:", error);
+    console.error("Error creating booking:", error);
     return { success: false, error: error.message };
   }
 }
-export async function getAllTechnicians() {
+export async function fetchJobStatuses(id) {
+  const { data, error } = await supabase
+    .from("jobs")
+    .select("id, status")
+    .eq("user_id", id)
+    .order("created_at", { ascending: false });
+  if (error) return { success: false, error: error.message };
+  return { success: true, data };
+}
+export async function fetchBookings({ id }) {
   try {
-    const { data, error } = await supabase
-      .from("profiles")
+    let { data: jobs, error } = await supabase
+      .from("jobs")
       .select("*")
-      .eq("role", "technician");
-    return { success: true, data };
+      .eq("technician_id", id);
+
+    if (error) throw error;
+    return { success: true, jobs };
   } catch (error) {
-    console.error("Error fetching technicians:", error);
+    console.error("Error fetching bookings:", error);
     return { success: false, error: error.message };
   }
 }
-export async function getTechnicianDetails(techId) {
+export async function fetchCustomerBookings({ id }) {
+  console.log("Fetching bookings for customer ID:", id);
+  try {
+    let { data: jobs, error } = await supabase
+      .from("jobs")
+      .select("*")
+      .eq("customer_id", id);
+
+    if (error) throw error;
+    return { success: true, jobs };
+  } catch (error) {
+    console.error("Error fetching customer bookings:", error);
+    return { success: false, error: error.message };
+  }
+}
+export async function updateJobStatus({ jobId, newStatus }) {
+  try {
+    // 1. Force lowercase and trim space to respect table CHECK constraints safely
+    const normalizedStatus = String(newStatus).toLowerCase().trim();
+
+    // 2. Client side safety validation check matching table options
+    const allowedStatuses = [
+      "pending",
+      "accepted",
+      "in_progress",
+      "completed",
+      "cancelled",
+    ];
+    if (!allowedStatuses.includes(normalizedStatus)) {
+      return {
+        success: false,
+        error: `Status "${newStatus}" is invalid. Must match: ${allowedStatuses.join(", ")}`,
+      };
+    }
+
+    // 3. Execute update without strict .single() constraint crashes
+    const { data, error } = await supabase
+      .from("jobs")
+      .update({ status: normalizedStatus })
+      .eq("id", jobId)
+      .select(); // Returns array list
+
+    if (error) throw error;
+
+    // 4. Fallback safe check if RLS blocks access or ID is absent
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        error:
+          "No matching job row found or action rejected by security policy rules.",
+      };
+    }
+
+    console.log(`Job ${jobId} status updated to ${normalizedStatus}`);
+    return { success: true, data: data[0] };
+  } catch (error) {
+    console.error("Error updating job status:", error);
+    return { success: false, error: error.message };
+  }
+}
+// --CHAT & MESSAGING ---
+export async function fetchChatMessages(jobId) {
   try {
     const { data, error } = await supabase
-      .from("profiles")
-      .select(
-        `
-        *,
-        technician_details (
-          *
-        )
-      `,
-      )
-      .eq("id", techId)
-      .single();
+      .from("chat_messages")
+      .select("*")
+      .eq("job_id", jobId)
+      .order("created_at", { ascending: true });
+
     if (error) throw error;
     return { success: true, data };
   } catch (error) {
-    console.error("Error fetching technician details:", error);
+    console.error("Error fetching chat messages:", error);
     return { success: false, error: error.message };
   }
 }

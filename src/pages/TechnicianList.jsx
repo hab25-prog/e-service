@@ -8,6 +8,7 @@ import TechnicianCard from "../component/cards/TechnicianCard";
 
 import { useTechnician } from "../hook/useTechnician";
 import useAuth from "../context/useAuth";
+// import { useTechnicians } from "../hook/useTechnicians";
 
 function TechnicianList() {
   const [selectedCity, setSelectedCity] = useState("all");
@@ -16,7 +17,7 @@ function TechnicianList() {
 
   const { technician, error, isLoading } = useTechnician();
   const { role } = useAuth();
-  console.log("technician data:", technician);
+  // console.log("technician data:", technician);
 
   // Always call hooks at the top level
   // Loading and role checks after hooks

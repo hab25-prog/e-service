@@ -118,5 +118,11 @@ function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
+export function useAuthContext() {
+  const context = useMemo(() => useMemo(() => useContext(AuthContext)), []);
+  if (!context) {
+    throw new Error("useAuthContext must be used within an AuthProvider");
+  }
+  return context;
+}
 export default AuthProvider;
